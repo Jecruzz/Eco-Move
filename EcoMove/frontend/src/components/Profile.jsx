@@ -16,6 +16,11 @@ function Profile({ user, onUpdateUser }) {
     try {
       const res = await axios.get(`${API_URL}/mobility-logs/me`);
       setLogs(res.data);
+
+      // ✅ refresca el usuario después de cargar historial
+      if (onUpdateUser) {
+        onUpdateUser();
+      }
     } catch (error) {
       console.error('Error cargando historial:', error);
     } finally {

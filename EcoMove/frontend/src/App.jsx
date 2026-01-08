@@ -13,6 +13,7 @@ import './App.css';
 
 const API_URL = 'http://localhost:5000/api';
 
+// Interceptor para añadir token a todas las peticiones
 axios.interceptors.request.use(config => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -37,7 +38,11 @@ function App() {
       const res = await axios.get(`${API_URL}/usuarios/me`);
       setUser(res.data);
     } catch (error) {
-      localStorage.removeItem('token');
+      console.error("Error cargando usuario:", error.response?.data || error.message);
+      if (error.response?.status === 401) {
+        localStorage.removeItem('token');
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -45,7 +50,8 @@ function App() {
 
   const handleLogin = (userData, token) => {
     localStorage.setItem('token', token);
-    setUser(userData);
+    setUser(userData); // ✅ entra de inmediato
+    cargarUsuario();   // refresca en segundo plano
   };
 
   const handleLogout = () => {
