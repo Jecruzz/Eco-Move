@@ -11,8 +11,15 @@ const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ charset: 'utf-8' }));
+app.use(express.urlencoded({ extended: true, charset: 'utf-8' }));
 app.use('/uploads', express.static('uploads'));
+
+// Headers para UTF-8
+app.use((req, res, next) => {
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  next();
+});
 
 // Configuración de Multer para imágenes
 const storage = multer.diskStorage({
@@ -215,7 +222,7 @@ app.get('/api/usuarios/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password');
     const stats = await MobilityLog.aggregate([
-      { $match: { usuarioId: mongoose.Types.ObjectId(req.userId) } },
+      { $match: { usuarioId: new mongoose.Types.ObjectId(req.userId) } },
       { $group: {
         _id: null,
         totalViajes: { $sum: 1 },
@@ -294,7 +301,7 @@ app.get('/api/mobility-logs/me', authMiddleware, async (req, res) => {
 app.get('/api/mobility-logs/stats', authMiddleware, async (req, res) => {
   try {
     const porTipo = await MobilityLog.aggregate([
-      { $match: { usuarioId: mongoose.Types.ObjectId(req.userId) } },
+      { $match: { usuarioId: new mongoose.Types.ObjectId(req.userId) } },
       { $group: {
         _id: '$tipoTransporte',
         count: { $sum: 1 },
@@ -304,7 +311,7 @@ app.get('/api/mobility-logs/stats', authMiddleware, async (req, res) => {
     ]);
     
     const porMes = await MobilityLog.aggregate([
-      { $match: { usuarioId: mongoose.Types.ObjectId(req.userId) } },
+      { $match: { usuarioId: new mongoose.Types.ObjectId(req.userId) } },
       { $group: {
         _id: { 
           mes: { $month: '$fecha' },
@@ -362,23 +369,38 @@ app.get('/api/rewards/disponibles', authMiddleware, async (req, res) => {
   }
 });
 
-// Crear nueva recompensa
-app.post('/api/rewards', async (req, res) => {
+// CANJEAR RECOMPENSA
+app.post('/api/rewards/canjear/:id', authMiddleware, async (req, res) => {
   try {
-    const { nombre, descripcion, puntosNecesarios, categoria, stock } = req.body;
-
-    const nuevaRecompensa = new Reward({
-      nombre,
-      descripcion,
-      puntosNecesarios,
-      categoria,
-      stock
+    const user = await User.findById(req.userId);
+    const reward = await Reward.findById(req.params.id);
+    
+    if (!reward) {
+      return res.status(404).json({ error: 'Recompensa no encontrada' });
+    }
+    
+    if (!reward.activa || reward.stock <= 0) {
+      return res.status(400).json({ error: 'Recompensa no disponible' });
+    }
+    
+    if (user.puntos < reward.puntosNecesarios) {
+      return res.status(400).json({ error: 'Puntos insuficientes' });
+    }
+    
+    // Descontar puntos y stock
+    user.puntos -= reward.puntosNecesarios;
+    reward.stock -= 1;
+    
+    await user.save();
+    await reward.save();
+    
+    res.json({ 
+      mensaje: '¡Recompensa canjeada exitosamente!',
+      puntosRestantes: user.puntos,
+      recompensa: reward.nombre
     });
-
-    await nuevaRecompensa.save();
-    res.status(201).json(nuevaRecompensa);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 

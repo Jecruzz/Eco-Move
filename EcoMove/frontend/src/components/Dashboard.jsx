@@ -27,15 +27,21 @@ function Dashboard({ user }) {
 
   const cargarDatos = async () => {
     try {
-      const [statsRes, globalRes, logsRes] = await Promise.all([
+      const [statsRes, globalRes, logsRes, userRes] = await Promise.all([
         axios.get(`${API_URL}/mobility-logs/stats`),
         axios.get(`${API_URL}/estadisticas`),
-        axios.get(`${API_URL}/mobility-logs/me`)
+        axios.get(`${API_URL}/mobility-logs/me`),
+        axios.get(`${API_URL}/usuarios/me`)
       ]);
 
       setStats(statsRes.data);
       setGlobalStats(globalRes.data);
       setRecentLogs(logsRes.data.slice(0, 5));
+      
+      // Actualizar datos del usuario desde el backend
+      if (userRes.data.stats) {
+        user.stats = userRes.data.stats;
+      }
     } catch (error) {
       console.error('Error cargando datos:', error);
     } finally {
@@ -95,7 +101,7 @@ function Dashboard({ user }) {
         <div className="stat-card warning">
           <div className="stat-icon">🚴</div>
           <div className="stat-content">
-            <h3>{user.stats?.totalViajes || 0}</h3>
+            <h3>{recentLogs.length}</h3>
             <p>Viajes Realizados</p>
           </div>
         </div>
