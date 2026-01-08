@@ -1,0 +1,120 @@
+.rewards-container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.rewards-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #2e7d32;
+}
+
+.rewards-subtitle {
+  text-align: center;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.rewards-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+}
+
+.reward-item {
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  text-align: center;
+}
+
+.reward-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.reward-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+.reward-item h3 {
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.reward-item p {
+  margin: 5px 0;
+  color: #555;
+  font-size: 0.95rem;
+}
+
+/* Disponible */
+.reward-item.available {
+  border: 2px solid #4caf50;
+  background: #e8f5e9;
+}
+
+.reward-item.available::before {
+  content: "✅ Disponible";
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  color: #2e7d32;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+/* Bloqueada */
+.reward-item.locked {
+  border: 2px solid #ccc;
+  background: #f5f5f5;
+  opacity: 0.9;
+}
+
+.reward-item.locked::before {
+  content: "🔒 Bloqueada";
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  color: #888;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.btn-redeem {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 18px;
+  background: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.btn-redeem:hover {
+  background: #388e3c;
+}
+
+.text-muted {
+  color: #888;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
