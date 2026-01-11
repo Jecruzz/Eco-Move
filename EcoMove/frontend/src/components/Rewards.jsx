@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Rewards.css';
+import { FaStar, FaGift, FaLock, FaCheck, FaBox, FaLightbulb, FaWalking, FaBicycle, FaBus, FaCarSide } from 'react-icons/fa';
+import { GiScooter, GiDiamondRing } from 'react-icons/gi';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -41,14 +43,13 @@ function Rewards({ user }) {
       const res = await axios.post(`${API_URL}/rewards/canjear/${rewardId}`);
       
       setMensaje({ 
-        texto: `🎉 ${res.data.mensaje} Te quedan ${res.data.puntosRestantes} puntos.`,
+        texto: `${res.data.mensaje} Te quedan ${res.data.puntosRestantes} puntos.`,
         tipo: 'success' 
       });
       
-      // Recargar recompensas
       setTimeout(() => {
         cargarRecompensas();
-        window.location.reload(); // Recargar para actualizar puntos del usuario
+        window.location.reload();
       }, 2000);
       
     } catch (error) {
@@ -76,12 +77,17 @@ function Rewards({ user }) {
     <div className="rewards-page">
       <div className="rewards-hero">
         <div className="hero-content">
-          <h1>💎 Catálogo de Recompensas</h1>
+          <h1>
+            <GiDiamondRing size={36} style={{ marginRight: '12px' }} />
+            Catálogo de Recompensas
+          </h1>
           <p>Canjea tus puntos por beneficios exclusivos</p>
         </div>
         <div className="hero-points">
           <div className="points-badge">
-            <span className="points-icon">⭐</span>
+            <span className="points-icon">
+              <FaStar size={32} color="#FFD700" />
+            </span>
             <div>
               <p className="points-label">Tus Puntos</p>
               <p className="points-value">{user.puntos.toLocaleString()}</p>
@@ -92,6 +98,7 @@ function Rewards({ user }) {
 
       {mensaje.texto && (
         <div className={`mensaje-flotante ${mensaje.tipo}`}>
+          {mensaje.tipo === 'success' && <FaCheck size={16} style={{ marginRight: '8px' }} />}
           {mensaje.texto}
         </div>
       )}
@@ -113,7 +120,9 @@ function Rewards({ user }) {
 
       {recompensas.length === 0 ? (
         <div className="empty-rewards">
-          <div className="empty-icon">🎁</div>
+          <div className="empty-icon">
+            <FaGift size={80} color="#999" />
+          </div>
           <h3>No hay recompensas disponibles</h3>
           <p>Sigue acumulando puntos para desbloquear beneficios</p>
         </div>
@@ -131,7 +140,9 @@ function Rewards({ user }) {
               >
                 {!puedeReclamar && (
                   <div className="lock-overlay">
-                    <span className="lock-icon">🔒</span>
+                    <span className="lock-icon">
+                      <FaLock size={48} color="white" />
+                    </span>
                   </div>
                 )}
 
@@ -144,12 +155,17 @@ function Rewards({ user }) {
                     />
                   ) : (
                     <div className="reward-placeholder">
-                      <span className="placeholder-icon">🎁</span>
+                      <span className="placeholder-icon">
+                        <FaGift size={60} color="white" />
+                      </span>
                     </div>
                   )}
                   
                   {puedeReclamar && (
-                    <span className="disponible-badge">✓ Disponible</span>
+                    <span className="disponible-badge">
+                      <FaCheck size={14} style={{ marginRight: '6px' }} />
+                      Disponible
+                    </span>
                   )}
                 </div>
 
@@ -159,13 +175,17 @@ function Rewards({ user }) {
 
                   <div className="reward-info">
                     <div className="info-item">
-                      <span className="info-icon">⭐</span>
+                      <span className="info-icon">
+                        <FaStar size={18} color="#FFD700" />
+                      </span>
                       <span className="info-text">{reward.puntosNecesarios.toLocaleString()} puntos</span>
                     </div>
                     
                     {reward.stock && (
                       <div className="info-item">
-                        <span className="info-icon">📦</span>
+                        <span className="info-icon">
+                          <FaBox size={18} color="#666" />
+                        </span>
                         <span className="info-text">{reward.stock} disponibles</span>
                       </div>
                     )}
@@ -193,9 +213,15 @@ function Rewards({ user }) {
                     {canjeando === reward._id ? (
                       <span>Canjeando...</span>
                     ) : puedeReclamar ? (
-                      <span>🎉 Canjear Ahora</span>
+                      <span>
+                        <FaCheck size={16} style={{ marginRight: '6px' }} />
+                        Canjear Ahora
+                      </span>
                     ) : (
-                      <span>🔒 Bloqueado</span>
+                      <span>
+                        <FaLock size={16} style={{ marginRight: '6px' }} />
+                        Bloqueado
+                      </span>
                     )}
                   </button>
                 </div>
@@ -206,30 +232,43 @@ function Rewards({ user }) {
       )}
 
       <div className="rewards-tips">
-        <h3>💡 ¿Cómo ganar más puntos?</h3>
+        <h3>
+          <FaLightbulb size={22} style={{ marginRight: '8px' }} />
+          ¿Cómo ganar más puntos?
+        </h3>
         <div className="tips-grid">
           <div className="tip-card">
-            <span className="tip-icon">🚶</span>
+            <span className="tip-icon">
+              <FaWalking size={32} color="#4CAF50" />
+            </span>
             <h4>Caminata</h4>
             <p>18 pts/km</p>
           </div>
           <div className="tip-card">
-            <span className="tip-icon">🚴</span>
+            <span className="tip-icon">
+              <FaBicycle size={32} color="#4CAF50" />
+            </span>
             <h4>Bicicleta</h4>
             <p>15 pts/km</p>
           </div>
           <div className="tip-card">
-            <span className="tip-icon">🛴</span>
+            <span className="tip-icon">
+              <GiScooter size={32} color="#4CAF50" />
+            </span>
             <h4>Scooter</h4>
             <p>12 pts/km</p>
           </div>
           <div className="tip-card">
-            <span className="tip-icon">🚗</span>
+            <span className="tip-icon">
+              <FaCarSide size={32} color="#4CAF50" />
+            </span>
             <h4>Carpooling</h4>
             <p>10 pts/km</p>
           </div>
           <div className="tip-card">
-            <span className="tip-icon">🚌</span>
+            <span className="tip-icon">
+              <FaBus size={32} color="#4CAF50" />
+            </span>
             <h4>Bus</h4>
             <p>8 pts/km</p>
           </div>

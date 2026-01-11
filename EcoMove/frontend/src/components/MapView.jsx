@@ -4,6 +4,8 @@ import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapView.css';
+import { FaMapMarkerAlt, FaCheck, FaBicycle, FaWalking, FaBus, FaCarSide, FaLeaf } from 'react-icons/fa';
+import { GiScooter } from 'react-icons/gi';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -27,7 +29,7 @@ const destinoIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-// Fix para iconos de Leaflet
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -112,7 +114,7 @@ function MapView({ user, onUpdateUser }) {
         }
       });
 
-      setSuccess('¡Viaje registrado exitosamente! 🎉');
+      setSuccess('Viaje registrado exitosamente');
       setOrigen(null);
       setDestino(null);
       setFormData({
@@ -134,9 +136,17 @@ function MapView({ user, onUpdateUser }) {
   return (
     <div className="map-view">
       <div className="map-sidebar">
-        <h2>Registrar Viaje Verde 🌱</h2>
+        <h2>
+          <FaLeaf size={24} color="#4CAF50" style={{ marginRight: '10px' }} />
+          Registrar Viaje Verde
+        </h2>
         
-        {success && <div className="success-message">{success}</div>}
+        {success && (
+          <div className="success-message">
+            <FaCheck size={16} style={{ marginRight: '8px' }} />
+            {success}
+          </div>
+        )}
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} className="map-form">
@@ -146,11 +156,18 @@ function MapView({ user, onUpdateUser }) {
               value={formData.tipoTransporte}
               onChange={(e) => setFormData({...formData, tipoTransporte: e.target.value})}
             >
-              <option value="bicicleta">🚴 Bicicleta</option>
-              <option value="caminata">🚶 Caminata</option>
-              <option value="transporte_publico">🚌 Transporte Público</option>
-              <option value="carpooling">🚗 Carpooling</option>
-              <option value="scooter">🛴 Scooter Eléctrico</option>
+              <option value="bicicleta">
+                Bicicleta
+              </option>
+              <option value="caminata">
+                Caminata
+              </option>
+              <option value="carpooling">
+                Carpooling
+              </option>
+              <option value="scooter">
+                Scooter Eléctrico
+              </option>
             </select>
           </div>
 
@@ -168,15 +185,17 @@ function MapView({ user, onUpdateUser }) {
               className="btn-map"
               onClick={() => {
                 setError('');
-                setOrigen({ lat: center[0], lng: center[1] }); // marcador en el centro
-                alert('Arrastra el marcador para ajustar el origen');
+                setOrigen({ lat: center[0], lng: center[1] });
+                alert('Arrastra el marcador verde para ajustar el origen');
               }}
             >
-              📍 Marcar en mapa
+              <FaMapMarkerAlt size={16} style={{ marginRight: '6px' }} />
+              Marcar en mapa
             </button>
             {origen && (
               <small className="coords-info">
-                ✓ Origen: {origen.lat.toFixed(4)}, {origen.lng.toFixed(4)}
+                <FaCheck size={12} style={{ marginRight: '4px' }} />
+                Origen: {origen.lat.toFixed(4)}, {origen.lng.toFixed(4)}
               </small>
             )}
           </div>
@@ -195,15 +214,17 @@ function MapView({ user, onUpdateUser }) {
               className="btn-map"
               onClick={() => {
                 setError('');
-                setDestino({ lat: center[0], lng: center[1] }); // marcador en el centro
-                alert('Arrastra el marcador para ajustar el destino');
+                setDestino({ lat: center[0], lng: center[1] });
+                alert('Arrastra el marcador rojo para ajustar el destino');
               }}
             >
-              📍 Marcar en mapa
+              <FaMapMarkerAlt size={16} style={{ marginRight: '6px' }} />
+              Marcar en mapa
             </button>
             {destino && (
               <small className="coords-info">
-                ✓ Destino: {destino.lat.toFixed(4)}, {destino.lng.toFixed(4)}
+                <FaCheck size={12} style={{ marginRight: '4px' }} />
+                Destino: {destino.lat.toFixed(4)}, {destino.lng.toFixed(4)}
               </small>
             )}
           </div>
@@ -219,18 +240,26 @@ function MapView({ user, onUpdateUser }) {
             disabled={loading || !origen || !destino}
             className="btn-submit"
           >
-            {loading ? 'Registrando...' : '✓ Registrar Viaje'}
+            {loading ? 'Registrando...' : (
+              <>
+                <FaCheck size={16} style={{ marginRight: '6px' }} />
+                Registrar Viaje
+              </>
+            )}
           </button>
         </form>
 
         <div className="map-instructions">
-          <h4>📌 Instrucciones:</h4>
+          <h4>
+            <FaMapMarkerAlt size={18} style={{ marginRight: '6px' }} />
+            Instrucciones:
+          </h4>
           <ol>
-            <li>Haz clic en “📍 Marcar en mapa” para origen → aparece marcador verde.</li>
+            <li>Haz clic en "Marcar en mapa" para origen - aparece marcador verde.</li>
             <li>Arrastra el marcador hasta tu punto de inicio</li>
-            <li>Haz clic en “📍 Marcar en mapa” para destino → aparece marcador rojo.</li>
+            <li>Haz clic en "Marcar en mapa" para destino - aparece marcador rojo.</li>
             <li>Arrastra el marcador hasta tu punto de llegada</li>
-            <li>Completa el formulario y pulsa “✓ Registrar Viaje”.</li>
+            <li>Completa el formulario y pulsa "Registrar Viaje".</li>
           </ol>
         </div>
       </div>
@@ -251,7 +280,7 @@ function MapView({ user, onUpdateUser }) {
             <Marker
               position={[origen.lat, origen.lng]}
               draggable={true}
-              icon={origenIcon}   // 👈 aquí usamos el icono verde
+              icon={origenIcon}
               eventHandlers={{
                 dragend: (e) => {
                   const newPos = e.target.getLatLng();
@@ -270,7 +299,7 @@ function MapView({ user, onUpdateUser }) {
             <Marker
               position={[destino.lat, destino.lng]}
               draggable={true}
-              icon={destinoIcon}   // 👈 aquí usamos el icono rojo
+              icon={destinoIcon}
               eventHandlers={{
                 dragend: (e) => {
                   const newPos = e.target.getLatLng();
@@ -284,7 +313,6 @@ function MapView({ user, onUpdateUser }) {
               </Popup>
             </Marker>
           )}
-
 
           {origen && destino && (
             <Polyline

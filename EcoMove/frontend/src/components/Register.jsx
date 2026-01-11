@@ -64,7 +64,7 @@ function Register({ onRegister }) {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>🌱 EcoMove</h1>
+          <h1>EcoMove</h1>
           <p>Únete a la revolución verde</p>
         </div>
 

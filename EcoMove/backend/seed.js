@@ -27,7 +27,7 @@ const recompensas = [
     imagen: "/uploads/recompensas/playstation5.avif"
   },
   {
-    nombre: "Smartwatch ⌚",
+    nombre: "Smartwatch",
     descripcion: "Smartwatch ecológico con monitoreo de actividad y estilo minimalista",
     puntosNecesarios: 15000,
     categoria: "tecnologia",
@@ -43,7 +43,7 @@ const recompensas = [
     imagen: "/uploads/recompensas/tomatodo.jpg"
   },
   {
-    nombre: "Cascos Gamer 🎧",
+    nombre: "Cascos Gamer",
     descripcion: "Auriculares gamer con sonido envolvente y luces LED",
     puntosNecesarios: 12000,
     categoria: "tecnologia",
@@ -51,7 +51,7 @@ const recompensas = [
     imagen: "/uploads/recompensas/cascosg.jpg"
   },
   {
-    nombre: "5 dólares en efectivo 💵",
+    nombre: "5 dólares en efectivo",
     descripcion: "Saldo de $5 en efectivo para tus compras",
     puntosNecesarios: 2000,
     categoria: "efectivo",
@@ -59,7 +59,7 @@ const recompensas = [
     imagen: "/uploads/recompensas/5dls.jpg"
   },
   {
-    nombre: "Audífonos Bluetooth 🎶",
+    nombre: "Audífonos Bluetooth",
     descripcion: "Audífonos inalámbricos con cancelación de ruido",
     puntosNecesarios: 8000,
     categoria: "tecnologia",
@@ -67,7 +67,7 @@ const recompensas = [
     imagen: "/uploads/recompensas/airpods.png"
   },
   {
-    nombre: "Powerbank Portátil 🔋",
+    nombre: "Powerbank Portátil",
     descripcion: "Batería externa de 10,000 mAh para tus dispositivos",
     puntosNecesarios: 7000,
     categoria: "tecnologia",
@@ -75,7 +75,7 @@ const recompensas = [
     imagen: "/uploads/recompensas/powerbank.jpg"
   },
   {
-    nombre: "Mouse Gamer 🖱️",
+    nombre: "Mouse Gamer",
     descripcion: "Mouse gamer ergonómico con luces RGB",
     puntosNecesarios: 6000,
     categoria: "tecnologia",
@@ -83,7 +83,7 @@ const recompensas = [
     imagen: "/uploads/recompensas/mouseg.jpg"
   },
   {
-    nombre: "Mochila EcoMove 🎒",
+    nombre: "Mochila EcoMove",
     descripcion: "Mochila ecológica hecha con materiales reciclados",
     puntosNecesarios: 8000,
     categoria: "producto",
@@ -91,7 +91,7 @@ const recompensas = [
     imagen: "/uploads/recompensas/mochilaeco.png"
   },
   {
-    nombre: "Teclado Mecánico Gamer ⌨️",
+    nombre: "Teclado Mecánico Gamer",
     descripcion: "Teclado mecánico con switches azules y retroiluminación RGB",
     puntosNecesarios: 10000,
     categoria: "tecnologia",
@@ -102,14 +102,14 @@ const recompensas = [
 
 async function seed() {
   try {
-    console.log('🗑️  Eliminando recompensas existentes...');
+    console.log('Eliminando recompensas existentes...');
     await Reward.deleteMany({});
     
-    console.log('📦 Insertando nuevas recompensas...');
+    console.log('Insertando nuevas recompensas...');
     await Reward.insertMany(recompensas);
     
-    console.log('✅ ¡Recompensas agregadas exitosamente!');
-    console.log(`📊 Total: ${recompensas.length} recompensas`);
+    console.log('¡Recompensas agregadas exitosamente!');
+    console.log(`Total: ${recompensas.length} recompensas`);
     
     process.exit(0);
   } catch (error) {

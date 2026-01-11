@@ -29,7 +29,7 @@ function Login({ onLogin }) {
     <div className="auth-container">
       <div className="auth-card">
         <div className="auth-header">
-          <h1>🌱 EcoMove</h1>
+          <h1>EcoMove</h1>
           <p>Movilidad Sostenible</p>
         </div>
 
@@ -44,7 +44,7 @@ function Login({ onLogin }) {
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({...formData, email: e.target.value})}
-              placeholder="tu@email.com"
+              placeholder="Ingresa tu email"
               required
             />
           </div>

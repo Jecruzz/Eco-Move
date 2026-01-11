@@ -148,13 +148,11 @@
 .medalla-item {
   display: flex;
   align-items: center;
-  gap: 15px;
   padding: 20px;
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: var(--white);
   border-radius: 12px;
   font-weight: 600;
   transition: all 0.3s;
+  color: #fff; /* texto siempre blanco para contraste */
 }
 
 .medalla-item:hover {
@@ -162,12 +160,9 @@
   box-shadow: var(--shadow-lg);
 }
 
-.medalla-emoji {
-  font-size: 2.5em;
-}
-
 .medalla-text {
   font-size: 1.1em;
+  flex: 1;
 }
 
 .profile-history {
