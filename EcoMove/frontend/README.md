@@ -1,16 +1,59 @@
-# React + Vite
+# Eco-Move
+Aplicación web para fomentar la movilidad sostenible, desarrollada con **React, Vite, Express y MongoDB**.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+## Tecnologías usadas- Frontend: React + Vite + React Icons
+- Backend: Node.js + Express
+- Base de datos: MongoDB
+- Estilos: CSS personalizado
+- Autenticación: JWT
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Requisitos previos
 
-## React Compiler
+Antes de comenzar asegúrate de tener instalado:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- [Node.js](https://nodejs.org/) (versión 18 o superior)
+- [npm](https://www.npmjs.com/) o [yarn](https://yarnpkg.com/)
+- [MongoDB](https://www.mongodb.com/try/download/community) (local o en la nube con [MongoDB Atlas](https://www.mongodb.com/atlas))
+- Git
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Instalación
+
+1. **Clonar el repositorio**
+#Terminal
+   git clone https://github.com/Jecruzz/Eco-Move.git
+   cd Eco-Move
+
+2. Instalar dependencias del frontend
+#Terminal
+-cd frontend
+-npm install
+
+3. Instalar dependencias del backend
+#Terminal
+-cd backend
+-npm install
+
+## Configuración- Variables de entorno
+- En la carpeta backend crea un archivo .env con la configuración:
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/ecomove
+JWT_SECRET=tu_clave_secreta
+- Si usas MongoDB Atlas, reemplaza MONGO_URI con tu cadena de conexión.
+- Base de datos
+- Asegúrate de que MongoDB esté corriendo en tu máquina:
+mongod
+
+## Ejecución - Backend
+cd backend
+------ npm run dev
+- El servidor se levantará en http://localhost:5000.
+## Ejecución - Frontend
+- Frontend
+cd frontend
+---- npm run dev
+- La aplicación estará disponible en http://localhost:5173.
+
