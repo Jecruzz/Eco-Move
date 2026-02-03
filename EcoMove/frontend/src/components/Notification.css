@@ -1,0 +1,29 @@
+.notification {
+  position: fixed;
+  top: 100px;
+  left: 55%;               /* centrado horizontal */
+  transform: translateX(-50%); /* ajuste para centrar */
+  padding: 20px 30px;      /* más grande */
+  border-radius: 10px;
+  color: #fff;
+  font-size: 1.1em;        /* texto más grande */
+  font-weight: 600;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+  max-width: 500px;        /* ancho máximo */
+  text-align: center;      /* texto centrado */
+}
+
+.notification.success {
+  background: #4CAF50;
+}
+
+.notification.error {
+  background: #F44336;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}

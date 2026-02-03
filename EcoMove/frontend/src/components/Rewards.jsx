@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Rewards.css';
-import { FaStar, FaGift, FaLock, FaCheck, FaBox, FaLightbulb, FaWalking, FaBicycle, FaBus, FaCarSide } from 'react-icons/fa';
+import { 
+  FaStar, FaGift, FaLock, FaCheck, FaBox, FaLightbulb, 
+  FaWalking, FaBicycle, FaBus, FaCarSide, FaTimesCircle 
+} from 'react-icons/fa';
 import { GiScooter, GiDiamondRing } from 'react-icons/gi';
 
 const API_URL = 'http://localhost:5000/api';
@@ -9,6 +12,7 @@ const API_URL = 'http://localhost:5000/api';
 function Rewards({ user }) {
   const [todasRecompensas, setTodasRecompensas] = useState([]);
   const [disponibles, setDisponibles] = useState([]);
+  const [canjeadas, setCanjeadas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [vista, setVista] = useState('todas');
   const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
@@ -28,6 +32,16 @@ function Rewards({ user }) {
         r.puntosNecesarios <= userPoints && r.stock > 0 && r.activa
       );
       setDisponibles(disp);
+
+      // 👇 pedir recompensas canjeadas del usuario autenticado
+      const token = localStorage.getItem('token');
+      if (token) {
+        const canjeadasRes = await axios.get(`${API_URL}/rewards/canjeadas`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setCanjeadas(canjeadasRes.data);
+      }
+
     } catch (error) {
       console.error('Error cargando recompensas:', error);
     } finally {
@@ -40,21 +54,34 @@ function Rewards({ user }) {
     setMensaje({ texto: '', tipo: '' });
     
     try {
-      const res = await axios.post(`${API_URL}/rewards/canjear/${rewardId}`);
+      const token = localStorage.getItem('token');
+      const res = await axios.post(`${API_URL}/rewards/canjear/${rewardId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       
       setMensaje({ 
-        texto: `${res.data.mensaje} Te quedan ${res.data.puntosRestantes} puntos.`,
+        texto: (
+          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <FaCheck color="#4CAF50" size={18} />
+            {res.data.mensaje} Te quedan {res.data.puntosRestantes} puntos.
+          </span>
+        ),
         tipo: 'success' 
       });
       
       setTimeout(() => {
         cargarRecompensas();
-        window.location.reload();
-      }, 2000);
+        setMensaje({ texto: '', tipo: '' });
+      }, 4000);
       
     } catch (error) {
       setMensaje({ 
-        texto: error.response?.data?.error || 'Error al canjear recompensa',
+        texto: (
+          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <FaTimesCircle color="#C62828" size={18} />
+            {error.response?.data?.error || 'Error al canjear recompensa'}
+          </span>
+        ),
         tipo: 'error' 
       });
     } finally {
@@ -71,7 +98,11 @@ function Rewards({ user }) {
     );
   }
 
-  const recompensas = vista === 'disponibles' ? disponibles : todasRecompensas;
+  const recompensas = vista === 'disponibles' 
+    ? disponibles 
+    : vista === 'canjeadas' 
+      ? canjeadas 
+      : todasRecompensas;
 
   return (
     <div className="rewards-page">
@@ -98,7 +129,6 @@ function Rewards({ user }) {
 
       {mensaje.texto && (
         <div className={`mensaje-flotante ${mensaje.tipo}`}>
-          {mensaje.tipo === 'success' && <FaCheck size={16} style={{ marginRight: '8px' }} />}
           {mensaje.texto}
         </div>
       )}
@@ -116,6 +146,12 @@ function Rewards({ user }) {
         >
           Disponibles ({disponibles.length})
         </button>
+        <button
+          className={`filter-btn ${vista === 'canjeadas' ? 'active' : ''}`}
+          onClick={() => setVista('canjeadas')}
+        >
+          Canjeadas ({canjeadas.length})
+        </button>
       </div>
 
       {recompensas.length === 0 ? (
@@ -123,7 +159,7 @@ function Rewards({ user }) {
           <div className="empty-icon">
             <FaGift size={80} color="#999" />
           </div>
-          <h3>No hay recompensas disponibles</h3>
+          <h3>No hay recompensas en esta vista</h3>
           <p>Sigue acumulando puntos para desbloquear beneficios</p>
         </div>
       ) : (
@@ -204,7 +240,6 @@ function Rewards({ user }) {
                       </p>
                     </div>
                   )}
-
                   <button
                     className={`btn-canjear ${puedeReclamar ? 'enabled' : 'disabled'}`}
                     onClick={() => puedeReclamar && canjearRecompensa(reward._id)}

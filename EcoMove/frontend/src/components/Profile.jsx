@@ -1,39 +1,27 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Profile.css';
-import { FaStar, FaBullseye, FaGlobeAmericas, FaBicycle, FaMedal, FaCalendarAlt, FaWalking, FaBus, FaCarSide, FaArrowRight } from 'react-icons/fa';
+import { FaStar, FaBullseye, FaGlobeAmericas, FaBicycle, FaMedal, FaCalendarAlt, FaWalking, FaBus, FaCarSide, FaArrowRight, FaFire } from 'react-icons/fa';
 import { GiScooter } from 'react-icons/gi';
 
 const API_URL = 'http://localhost:5000/api';
 
-// Colores por tipo de medalla
 const MEDALLA_COLORES = {
-  // Impacto ambiental
   "Guardián del Planeta": "#4CAF50",
   "Héroe del Clima": "#2E7D32",
   "Campeón de la Tierra": "#1B5E20",
-
-  // Viajes
   "Ciclista Urbano": "#2196F3",
   "Explorador Sostenible": "#1976D2",
   "Leyenda de la Movilidad": "#0D47A1",
-
-  // Distancia
   "Maratonista Verde": "#FF9800",
   "Viajero incansable": "#F57C00",
   "Globetrotter Ecológico": "#E65100",
-
-  // Nivel
   "Elite Sostenible": "#9C27B0",
   "Maestro EcoMove": "#7B1FA2",
   "Leyenda Verde": "#4A148C",
-
-  // Puntos acumulados
   "Recolector de Puntos": "#FFC107",
   "Acumulador Experto": "#FFB300",
   "Rey de las Recompensas": "#FFD700",
-
-  // Actividad especial
   "Primer Paso Verde": "#009688",
   "Semana Sostenible": "#00695C",
   "Mes de Impacto": "#004D40"
@@ -51,10 +39,7 @@ function Profile({ user, onUpdateUser }) {
     try {
       const res = await axios.get(`${API_URL}/mobility-logs/me`);
       setLogs(res.data);
-
-      if (onUpdateUser) {
-        onUpdateUser();
-      }
+      if (onUpdateUser) onUpdateUser();
     } catch (error) {
       console.error('Error cargando historial:', error);
     } finally {
@@ -78,12 +63,24 @@ function Profile({ user, onUpdateUser }) {
       <div className="profile-header">
         <div className="profile-avatar-section">
           {user.imagen ? (
-            <img src={`http://localhost:5000${user.imagen}`} alt={user.nombre} className="profile-avatar-large" />
+            <img
+              src={`http://localhost:5000${user.imagen}`}
+              alt={user.nombre}
+              className="profile-avatar-large"
+            />
           ) : (
             <div className="profile-avatar-placeholder">{user.nombre.charAt(0)}</div>
           )}
-          <h1>{user.nombre}</h1>
-          <p className="profile-email">{user.email}</p>
+
+          <div className="profile-info">
+            <h1>{user.nombre}</h1>
+            <p className="profile-email">{user.email}</p>
+            {/* 👇 Racha al lado del nombre */}
+            <div className="profile-racha-inline">
+              <FaFire size={20} color="#FF5722" style={{ marginRight: "6px" }} />
+              <span>{user.rachaDias || 0}</span>
+            </div>
+          </div>
         </div>
 
         <div className="profile-stats-cards">
@@ -124,6 +121,15 @@ function Profile({ user, onUpdateUser }) {
             <div>
               <h3>{user.stats?.totalViajes || 0}</h3>
               <p>Viajes Realizados</p>
+            </div>
+          </div>
+          <div className="profile-stat-card">
+            <div className="stat-icon">
+              <FaFire size={28} color="#FF5722" />
+            </div>
+            <div>
+              <h3>{user.rachaDias || 0}</h3>
+              <p>Días de Racha</p>
             </div>
           </div>
         </div>

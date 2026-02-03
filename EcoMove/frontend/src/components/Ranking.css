@@ -137,14 +137,14 @@
   color: #666;
 }
 
-/* Stats a la derecha */
 .user-stats {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
+  gap: 12px;
+  align-items: center;
 }
 
-.stat-value {
+.user-stats .stat-value {
+  display: flex;
+  align-items: center;
   font-size: 0.9rem;
-  color: #333;
 }

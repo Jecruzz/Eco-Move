@@ -37,7 +37,7 @@ function Ranking() {
   return (
     <div className="ranking-container">
       <div className="ranking-header">
-        <h1>🏆 Ranking Global</h1>
+        <h1>Ranking Global</h1>
         <p>Los mejores contribuyentes a la movilidad sostenible</p>
       </div>
 
@@ -61,6 +61,12 @@ function Ranking() {
                 <p><strong>{user.puntos}</strong> puntos</p>
                 <p>{user.co2Ahorrado.toFixed(1)} kg CO₂</p>
                 <p>Nivel {user.nivel}</p>
+                <p>
+                  <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <span role="img" aria-label="fire">🔥</span> {user.rachaDias || 0} días
+                  </span>
+                </p>
+
               </div>
             </div>
           </div>
@@ -87,10 +93,13 @@ function Ranking() {
                 <span className="user-level">Nivel {user.nivel}</span>
               </div>
             </div>
-            <div className="user-stats">
-              <span className="stat-value">{user.puntos} pts</span>
-              <span className="stat-value">{user.co2Ahorrado.toFixed(1)} kg CO₂</span>
-            </div>
+              <div className="user-stats">
+                <span className="stat-value">{user.puntos} pts</span>
+                <span className="stat-value">{user.co2Ahorrado.toFixed(1)} kg CO₂</span>
+                <span className="stat-value">
+                  <span role="img" aria-label="fire">🔥</span> {user.rachaDias || 0} días
+                </span>
+              </div>
           </div>
         ))}
       </div>

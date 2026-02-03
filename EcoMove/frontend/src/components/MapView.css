@@ -5,7 +5,7 @@
 }
 
 .map-sidebar {
-  width: 400px;
+  width: 500px;
   padding: 30px;
   overflow-y: auto;
   background: var(--white);
@@ -58,6 +58,39 @@
   border-radius: 8px;
   text-align: center;
   color: var(--dark);
+}
+
+.route-info {
+  padding: 15px;
+  background: #E8F5E9;
+  border-radius: 8px;
+  border-left: 4px solid #4CAF50;
+  margin-bottom: 15px;
+}
+
+.route-info.loading-route {
+  background: #E3F2FD;
+  border-left-color: #2196F3;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1976D2;
+}
+
+.route-detail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: #2E7D32;
+}
+
+.route-detail:last-child {
+  margin-bottom: 0;
+}
+
+.route-detail strong {
+  color: #1B5E20;
 }
 
 .btn-submit {

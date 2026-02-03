@@ -15,25 +15,24 @@ app.use(express.json({ charset: 'utf-8' }));
 app.use(express.urlencoded({ extended: true, charset: 'utf-8' }));
 app.use('/uploads', express.static('uploads'));
 
-// Headers para UTF-8
 app.use((req, res, next) => {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   next();
 });
 
-// Configuración de Multer para imágenes
+// Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/'),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
 });
 const upload = multer({ storage, limits: { fileSize: 5000000 } });
 
-// MongoDB Connection
+// MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/movilidad_sostenible')
 .then(() => console.log('✅ MongoDB conectado'))
 .catch(err => console.error('❌ Error MongoDB:', err));
 
-// Schemas Mejorados
+// Schemas
 const userSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   email: { type: String, required: true, unique: true },
@@ -44,7 +43,9 @@ const userSchema = new mongoose.Schema({
   co2Ahorrado: { type: Number, default: 0 },
   distanciaTotal: { type: Number, default: 0 },
   medallas: [{ type: String }],
-  fechaRegistro: { type: Date, default: Date.now }
+  fechaRegistro: { type: Date, default: Date.now },
+  rachaDias: { type: Number, default: 0 },
+  ultimaRacha: { type: Date }
 });
 
 const mobilityLogSchema = new mongoose.Schema({
@@ -70,14 +71,17 @@ const mobilityLogSchema = new mongoose.Schema({
   duracion: { type: Number },
   fecha: { type: Date, default: Date.now }
 });
-
 mobilityLogSchema.index({ origen: '2dsphere', destino: '2dsphere' });
 
 const rewardSchema = new mongoose.Schema({
   nombre: { type: String, required: true },
   descripcion: { type: String, required: true },
   puntosNecesarios: { type: Number, required: true },
-  categoria: { type: String, enum: ['descuento', 'producto', 'experiencia', 'especial'] },
+  categoria: { 
+    type: String, 
+    enum: ['consola', 'tecnologia', 'producto', 'efectivo'],
+    required: true 
+  },
   imagen: { type: String },
   stock: { type: Number, default: 100 },
   activa: { type: Boolean, default: true },
@@ -95,7 +99,6 @@ const partnerSchema = new mongoose.Schema({
   convenios: [String],
   activo: { type: Boolean, default: true }
 });
-
 partnerSchema.index({ ubicacion: '2dsphere' });
 
 const challengeSchema = new mongoose.Schema({
@@ -119,6 +122,7 @@ const challengeProgressSchema = new mongoose.Schema({
   fechaCompletado: { type: Date }
 });
 
+// Models
 const User = mongoose.model('User', userSchema);
 const MobilityLog = mongoose.model('MobilityLog', mobilityLogSchema);
 const Reward = mongoose.model('Reward', rewardSchema);
@@ -143,9 +147,9 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// Función mejorada de cálculo de impacto
+// Función de impacto
 const calcularImpacto = (tipoTransporte, distancia) => {
-  const FE_AUTO = 0.192; // kg CO2 por km en auto promedio
+  const FE_AUTO = 0.192;
   const factores = {
     bicicleta: { fe: 0, puntosPorKm: 15, bonus: 1.2 },
     caminata: { fe: 0, puntosPorKm: 18, bonus: 1.3 },
@@ -153,84 +157,26 @@ const calcularImpacto = (tipoTransporte, distancia) => {
     carpooling: { fe: 0.048, puntosPorKm: 10, bonus: 1.1 },
     scooter: { fe: 0.025, puntosPorKm: 12, bonus: 1.15 }
   };
-  
   const factor = factores[tipoTransporte];
   const co2Ahorrado = distancia * (FE_AUTO - factor.fe);
   const puntos = Math.round(distancia * factor.puntosPorKm * factor.bonus);
-  
-  return {
-    co2Ahorrado: parseFloat(co2Ahorrado.toFixed(2)),
-    puntos
-  };
+  return { co2Ahorrado: parseFloat(co2Ahorrado.toFixed(2)), puntos };
 };
 
-// Sistema de Niveles y Medallas
 const calcularNivel = (puntos) => Math.floor(Math.sqrt(puntos / 100)) + 1;
 
-const verificarMedallas = (user, stats) => {
-  const medallas = [];
-  
-  // Impacto ambiental
-  if (stats.co2Total >= 100) medallas.push('Guardián del Planeta');
-  if (stats.co2Total >= 500) medallas.push('Héroe del Clima');
-  if (stats.co2Total >= 1000) medallas.push('Campeón de la Tierra');
-  
-  // Viajes
-  if (stats.totalViajes >= 50) medallas.push('Ciclista Urbano');
-  if (stats.totalViajes >= 200) medallas.push('Explorador Sostenible');
-  if (stats.totalViajes >= 500) medallas.push('Leyenda de la Movilidad');
-  
-  // Distancia
-  if (stats.distanciaTotal >= 500) medallas.push('Maratonista Verde');
-  if (stats.distanciaTotal >= 2000) medallas.push('Viajero Incansable');
-  if (stats.distanciaTotal >= 5000) medallas.push('Globetrotter Ecológico');
-  
-  // Nivel
-  if (user.nivel >= 10) medallas.push('Elite Sostenible');
-  if (user.nivel >= 20) medallas.push('Maestro EcoMove');
-  if (user.nivel >= 30) medallas.push('Leyenda Verde');
-  
-  // Puntos acumulados
-  if (user.puntos >= 1000) medallas.push('Recolector de Puntos');
-  if (user.puntos >= 5000) medallas.push('Acumulador Experto');
-  if (user.puntos >= 10000) medallas.push('Rey de las Recompensas');
-  
-  // Actividad especial
-  if (stats.totalViajes >= 1 && stats.co2Total >= 1) medallas.push('Primer Paso Verde');
-  if (stats.totalViajes >= 7) medallas.push('Semana Sostenible');
-  if (stats.totalViajes >= 30) medallas.push('Mes de Impacto');
-  
-  return medallas;
-};
-
-// ========== RUTAS DE AUTENTICACIÓN ==========
-
+// ========== AUTENTICACIÓN ==========
 app.post('/api/auth/register', upload.single('imagen'), async (req, res) => {
   try {
     const { nombre, email, password } = req.body;
-    
     const existente = await User.findOne({ email });
     if (existente) return res.status(400).json({ error: 'El email ya está registrado' });
-    
     const hashedPassword = await bcrypt.hash(password, 10);
     const imagen = req.file ? `/uploads/${req.file.filename}` : '';
-    
     const user = new User({ nombre, email, password: hashedPassword, imagen });
     await user.save();
-    
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-    
-    res.status(201).json({
-      token,
-      user: {
-        id: user._id,
-        nombre: user.nombre,
-        email: user.email,
-        imagen: user.imagen,
-        puntos: user.puntos,
-        nivel: user.nivel
-      }
-    });
+    res.status(201).json({ token, user });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -239,15 +185,11 @@ app.post('/api/auth/register', upload.single('imagen'), async (req, res) => {
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    
     const user = await User.findOne({ email });
     if (!user) return res.status(401).json({ error: 'Credenciales inválidas' });
-    
     const validPassword = await bcrypt.compare(password, user.password);
     if (!validPassword) return res.status(401).json({ error: 'Credenciales inválidas' });
-    
     const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '7d' });
-    
     res.json({
       token,
       user: {
@@ -258,7 +200,8 @@ app.post('/api/auth/login', async (req, res) => {
         puntos: user.puntos,
         nivel: user.nivel,
         co2Ahorrado: user.co2Ahorrado,
-        medallas: user.medallas
+        medallas: user.medallas,
+        rachaDias: user.rachaDias
       }
     });
   } catch (error) {
@@ -267,7 +210,6 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ========== PERFIL DE USUARIO ==========
-
 app.get('/api/usuarios/me', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId).select('-password');
@@ -280,31 +222,46 @@ app.get('/api/usuarios/me', authMiddleware, async (req, res) => {
         co2Total: { $sum: '$co2Ahorrado' }
       }}
     ]);
-    
+
     const userStats = stats[0] || { totalViajes: 0, distanciaTotal: 0, co2Total: 0 };
-    const medallas = verificarMedallas(user, userStats);
-    
-    if (medallas.length > user.medallas.length) {
-      user.medallas = medallas;
-      await user.save();
-    }
-    
-    res.json({ ...user.toObject(), stats: userStats });
+    res.json({ ...user.toObject(), stats: userStats, rachaDias: user.rachaDias });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ========== ESTADÍSTICAS GLOBALES ==========
+app.get('/api/estadisticas', async (req, res) => {
+  try {
+    const totalUsuarios = await User.countDocuments();
+    const stats = await MobilityLog.aggregate([
+      { $group: {
+        _id: null,
+        totalViajes: { $sum: 1 },
+        co2Total: { $sum: '$co2Ahorrado' },
+        distanciaTotal: { $sum: '$distancia' }
+      }}
+    ]);
+
+    res.json({
+      totalUsuarios,
+      totalViajes: stats[0]?.totalViajes || 0,
+      co2TotalAhorrado: stats[0]?.co2Total || 0,
+      distanciaTotal: stats[0]?.distanciaTotal || 0
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
 // ========== MOBILITY LOGS ==========
-
 app.post('/api/mobility-logs', authMiddleware, async (req, res) => {
   try {
     const { tipoTransporte, distancia, origen, destino, duracion } = req.body;
-    
     const impacto = calcularImpacto(tipoTransporte, distancia);
-    
+
     const log = new MobilityLog({
-      usuarioId: req.userId,
+      usuarioId: new mongoose.Types.ObjectId(req.userId),
       tipoTransporte,
       distancia,
       origen: {
@@ -321,20 +278,51 @@ app.post('/api/mobility-logs', authMiddleware, async (req, res) => {
       co2Ahorrado: impacto.co2Ahorrado,
       puntos: impacto.puntos
     });
-    
+
     await log.save();
-    
+
     const user = await User.findById(req.userId);
+
+    // lógica de racha diaria basada en calendario
+    const hoy = new Date();
+    const ultima = user.ultimaRacha ? new Date(user.ultimaRacha) : null;
+
+    // Normalizamos las fechas a medianoche local
+    const hoyMidnight = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    const ultimaMidnight = ultima ? new Date(ultima.getFullYear(), ultima.getMonth(), ultima.getDate()) : null;
+
+    if (!ultimaMidnight) {
+      // Primer viaje
+      user.rachaDias = 1;
+      user.ultimaRacha = hoyMidnight;
+      user.puntos += 200;
+    } else {
+      const diffDias = Math.floor((hoyMidnight - ultimaMidnight) / (1000 * 60 * 60 * 24));
+
+      if (diffDias === 0) {
+        // Ya hubo viaje hoy → mantener racha igual
+        user.rachaDias = user.rachaDias || 1;
+      } else if (diffDias === 1) {
+        // Último viaje fue ayer → incrementar racha
+        user.rachaDias += 1;
+        user.ultimaRacha = hoyMidnight;
+        user.puntos += 200;
+      } else {
+        // Se saltó días → reiniciar racha
+        user.rachaDias = 1;
+        user.ultimaRacha = hoyMidnight;
+        user.puntos += 200;
+      }
+    }
+    // puntos normales del viaje
     user.puntos += impacto.puntos;
     user.co2Ahorrado += impacto.co2Ahorrado;
     user.distanciaTotal += distancia;
     user.nivel = calcularNivel(user.puntos);
+
     await user.save();
 
-    // Actualizar progreso de retos
-    await actualizarRetosUsuario(req.userId, log);
-    
-    res.status(201).json(log);
+    res.status(201).json({ log, rachaDias: user.rachaDias });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -362,20 +350,17 @@ app.get('/api/mobility-logs/stats', authMiddleware, async (req, res) => {
         co2Total: { $sum: '$co2Ahorrado' }
       }}
     ]);
-    
+
     const porMes = await MobilityLog.aggregate([
       { $match: { usuarioId: new mongoose.Types.ObjectId(req.userId) } },
       { $group: {
-        _id: { 
-          mes: { $month: '$fecha' },
-          año: { $year: '$fecha' }
-        },
+        _id: { mes: { $month: '$fecha' }, año: { $year: '$fecha' } },
         co2: { $sum: '$co2Ahorrado' },
         viajes: { $sum: 1 }
       }},
       { $sort: { '_id.año': 1, '_id.mes': 1 } }
     ]);
-    
+
     res.json({ porTipo, porMes });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -383,13 +368,12 @@ app.get('/api/mobility-logs/stats', authMiddleware, async (req, res) => {
 });
 
 // ========== RANKING ==========
-
 app.get('/api/ranking', async (req, res) => {
   try {
     const ranking = await User.find()
       .sort({ puntos: -1 })
       .limit(20)
-      .select('nombre imagen puntos nivel co2Ahorrado medallas');
+      .select('nombre imagen puntos nivel co2Ahorrado medallas rachaDias');
     res.json(ranking);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -397,7 +381,6 @@ app.get('/api/ranking', async (req, res) => {
 });
 
 // ========== RECOMPENSAS ==========
-
 app.get('/api/rewards', async (req, res) => {
   try {
     const rewards = await Reward.find({ activa: true, stock: { $gt: 0 } })
@@ -422,25 +405,15 @@ app.get('/api/rewards/disponibles', authMiddleware, async (req, res) => {
   }
 });
 
-// CANJEAR RECOMPENSA
 app.post('/api/rewards/canjear/:id', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
     const reward = await Reward.findById(req.params.id);
     
-    if (!reward) {
-      return res.status(404).json({ error: 'Recompensa no encontrada' });
-    }
+    if (!reward) return res.status(404).json({ error: 'Recompensa no encontrada' });
+    if (!reward.activa || reward.stock <= 0) return res.status(400).json({ error: 'Recompensa no disponible' });
+    if (user.puntos < reward.puntosNecesarios) return res.status(400).json({ error: 'Puntos insuficientes' });
     
-    if (!reward.activa || reward.stock <= 0) {
-      return res.status(400).json({ error: 'Recompensa no disponible' });
-    }
-    
-    if (user.puntos < reward.puntosNecesarios) {
-      return res.status(400).json({ error: 'Puntos insuficientes' });
-    }
-    
-    // Descontar puntos y stock
     user.puntos -= reward.puntosNecesarios;
     reward.stock -= 1;
     
@@ -457,56 +430,7 @@ app.post('/api/rewards/canjear/:id', authMiddleware, async (req, res) => {
   }
 });
 
-// ========== PARTNERS ==========
-
-app.get('/api/partners/cercanos', authMiddleware, async (req, res) => {
-  try {
-    const { lng, lat, maxDistance = 5000 } = req.query;
-    
-    const partners = await Partner.find({
-      activo: true,
-      ubicacion: {
-        $near: {
-          $geometry: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
-          $maxDistance: maxDistance
-        }
-      }
-    });
-    
-    res.json(partners);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ========== ESTADÍSTICAS GLOBALES ==========
-
-app.get('/api/estadisticas', async (req, res) => {
-  try {
-    const totalUsuarios = await User.countDocuments();
-    const totalViajes = await MobilityLog.countDocuments();
-    const stats = await MobilityLog.aggregate([
-      { $group: {
-        _id: null,
-        co2Total: { $sum: '$co2Ahorrado' },
-        distanciaTotal: { $sum: '$distancia' }
-      }}
-    ]);
-    
-    res.json({
-      totalUsuarios,
-      totalViajes,
-      co2TotalAhorrado: stats[0]?.co2Total || 0,
-      distanciaTotal: stats[0]?.distanciaTotal || 0
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ========== RETOS DIARIOS ==========
-
-// Obtener retos activos
+// ========== RETOS ==========
 app.get('/api/challenges', authMiddleware, async (req, res) => {
   try {
     const now = new Date();
@@ -516,19 +440,56 @@ app.get('/api/challenges', authMiddleware, async (req, res) => {
       fechaFin: { $gte: now }
     });
 
-    // Obtener progreso del usuario para cada reto
     const challengesConProgreso = await Promise.all(
       challenges.map(async (challenge) => {
-        const progress = await ChallengeProgress.findOne({
+        // Buscar progreso existente
+        let progress = await ChallengeProgress.findOne({
           usuarioId: req.userId,
           challengeId: challenge._id
         });
 
+        if (!progress) {
+          progress = new ChallengeProgress({
+            usuarioId: req.userId,
+            challengeId: challenge._id,
+            progreso: 0,
+            completado: false
+          });
+        }
+
+        // 🔑 Calcular progreso según tipo de reto usando MobilityLogs
+        const logs = await MobilityLog.find({ usuarioId: req.userId });
+
+        let nuevoProgreso = 0;
+        switch (challenge.tipo) {
+          case 'distancia':
+            nuevoProgreso = logs.reduce((acc, log) => acc + log.distancia, 0);
+            break;
+          case 'viajes':
+            nuevoProgreso = logs.length;
+            break;
+          case 'co2':
+            nuevoProgreso = logs.reduce((acc, log) => acc + log.co2Ahorrado, 0);
+            break;
+          case 'transporte':
+            nuevoProgreso = logs.filter(l => l.tipoTransporte === challenge.transporteRequerido).length;
+            break;
+        }
+
+        progress.progreso = nuevoProgreso;
+
+        // Verificar si completó
+        if (progress.progreso >= challenge.objetivo) {
+          progress.completado = true;
+        }
+
+        await progress.save();
+
         return {
           ...challenge.toObject(),
-          progreso: progress?.progreso || 0,
-          completado: progress?.completado || false,
-          progressId: progress?._id
+          progreso: progress.progreso,
+          completado: progress.completado,
+          progressId: progress._id
         };
       })
     );
@@ -538,72 +499,6 @@ app.get('/api/challenges', authMiddleware, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// Crear nuevo reto (admin)
-app.post('/api/challenges', async (req, res) => {
-  try {
-    const challenge = new Challenge(req.body);
-    await challenge.save();
-    res.status(201).json(challenge);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Actualizar progreso del reto
-async function actualizarRetosUsuario(usuarioId, mobilityLog) {
-  try {
-    const challenges = await Challenge.find({
-      activo: true,
-      fechaInicio: { $lte: new Date() },
-      fechaFin: { $gte: new Date() }
-    });
-
-    for (const challenge of challenges) {
-      let progress = await ChallengeProgress.findOne({
-        usuarioId,
-        challengeId: challenge._id
-      });
-
-      if (!progress) {
-        progress = new ChallengeProgress({
-          usuarioId,
-          challengeId: challenge._id,
-          progreso: 0
-        });
-      }
-
-      // Actualizar progreso según tipo de reto
-      let incremento = 0;
-      if (challenge.tipo === 'distancia') {
-        incremento = mobilityLog.distancia;
-      } else if (challenge.tipo === 'viajes') {
-        incremento = 1;
-      } else if (challenge.tipo === 'co2') {
-        incremento = mobilityLog.co2Ahorrado;
-      } else if (challenge.tipo === 'transporte' && challenge.transporteRequerido === mobilityLog.tipoTransporte) {
-        incremento = mobilityLog.distancia;
-      }
-
-      progress.progreso += incremento;
-
-      // Verificar si completó el reto
-      if (!progress.completado && progress.progreso >= challenge.objetivo) {
-        progress.completado = true;
-        progress.fechaCompletado = new Date();
-
-        // Dar puntos de recompensa
-        const user = await User.findById(usuarioId);
-        user.puntos += challenge.recompensaPuntos;
-        await user.save();
-      }
-
-      await progress.save();
-    }
-  } catch (error) {
-    console.error('Error actualizando retos:', error);
-  }
-}
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

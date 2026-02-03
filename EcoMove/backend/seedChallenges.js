@@ -19,6 +19,11 @@ const challengeSchema = new mongoose.Schema({
 
 const Challenge = mongoose.model('Challenge', challengeSchema);
 
+// 🔑 Función para normalizar a medianoche local
+function startOfDay(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 const retos = [
   {
     titulo: "Recorre 10 km esta semana",
@@ -26,8 +31,8 @@ const retos = [
     tipo: "distancia",
     objetivo: 10,
     recompensaPuntos: 200,
-    fechaInicio: new Date(),
-    fechaFin: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    fechaInicio: startOfDay(),
+    fechaFin: new Date(startOfDay().getTime() + 7 * 24 * 60 * 60 * 1000),
     activo: true
   },
   {
@@ -37,8 +42,8 @@ const retos = [
     objetivo: 5,
     recompensaPuntos: 150,
     transporteRequerido: "bicicleta",
-    fechaInicio: new Date(),
-    fechaFin: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    fechaInicio: startOfDay(),
+    fechaFin: new Date(startOfDay().getTime() + 7 * 24 * 60 * 60 * 1000),
     activo: true
   },
   {
@@ -47,8 +52,8 @@ const retos = [
     tipo: "co2",
     objetivo: 5,
     recompensaPuntos: 250,
-    fechaInicio: new Date(),
-    fechaFin: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    fechaInicio: startOfDay(),
+    fechaFin: new Date(startOfDay().getTime() + 7 * 24 * 60 * 60 * 1000),
     activo: true
   },
   {
@@ -57,8 +62,8 @@ const retos = [
     tipo: "viajes",
     objetivo: 10,
     recompensaPuntos: 300,
-    fechaInicio: new Date(),
-    fechaFin: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    fechaInicio: startOfDay(),
+    fechaFin: new Date(startOfDay().getTime() + 14 * 24 * 60 * 60 * 1000),
     activo: true
   },
   {
@@ -68,8 +73,8 @@ const retos = [
     objetivo: 15,
     recompensaPuntos: 350,
     transporteRequerido: "caminata",
-    fechaInicio: new Date(),
-    fechaFin: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+    fechaInicio: startOfDay(),
+    fechaFin: new Date(startOfDay().getTime() + 14 * 24 * 60 * 60 * 1000),
     activo: true
   }
 ];
@@ -82,7 +87,7 @@ async function seed() {
     console.log('Insertando nuevos retos...');
     await Challenge.insertMany(retos);
     
-    console.log(`Retos agregados exitosamente: ${retos.length} retos`);
+    console.log(`✅ Retos agregados exitosamente: ${retos.length} retos`);
     process.exit(0);
   } catch (error) {
     console.error('Error:', error);

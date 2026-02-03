@@ -5,13 +5,18 @@ mongoose.connect('mongodb://localhost:27017/movilidad_sostenible')
   .then(() => console.log('✅ Conectado a MongoDB'))
   .catch(err => console.error('❌ Error:', err));
 
+// Definimos el esquema con enum para validar categorías
 const rewardSchema = new mongoose.Schema({
-  nombre: String,
-  descripcion: String,
-  puntosNecesarios: Number,
-  categoria: String,
+  nombre: { type: String, required: true },
+  descripcion: { type: String, required: true },
+  puntosNecesarios: { type: Number, required: true },
+  categoria: { 
+    type: String, 
+    enum: ['consola', 'tecnologia', 'producto', 'efectivo'], // 👈 incluye efectivo
+    required: true 
+  },
   imagen: String,
-  stock: Number,
+  stock: { type: Number, default: 0 },
   activa: { type: Boolean, default: true }
 });
 

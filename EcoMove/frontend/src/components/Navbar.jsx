@@ -1,8 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import './Navbar.css';
 
-
-import { FaLeaf, FaStar, FaHome, FaMapMarkedAlt, FaTrophy, FaListOl, FaGift } from "react-icons/fa";
+import { FaLeaf, FaStar, FaHome, FaMapMarkedAlt, FaTrophy, FaListOl, FaGift, FaFire } from "react-icons/fa";
 
 function Navbar({ user, onLogout }) {
   const location = useLocation();
@@ -18,38 +17,23 @@ function Navbar({ user, onLogout }) {
         </Link>
 
         <div className="nav-links">
-          <Link 
-            to="/" 
-            className={location.pathname === '/' ? 'active' : ''}
-          >
+          <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
             <FaHome size={18} style={{ marginRight: "6px" }} />
             <span>Dashboard</span>
           </Link>
-          <Link 
-            to="/mapa" 
-            className={location.pathname === '/mapa' ? 'active' : ''}
-          >
+          <Link to="/mapa" className={location.pathname === '/mapa' ? 'active' : ''}>
             <FaMapMarkedAlt size={18} style={{ marginRight: "6px" }} />
             <span>Mapa</span>
           </Link>
-          <Link 
-            to="/retos" 
-            className={location.pathname === '/retos' ? 'active' : ''}
-          >
+          <Link to="/retos" className={location.pathname === '/retos' ? 'active' : ''}>
             <FaTrophy size={18} style={{ marginRight: "6px" }} />
             <span>Retos</span>
           </Link>
-          <Link 
-            to="/ranking" 
-            className={location.pathname === '/ranking' ? 'active' : ''}
-          >
+          <Link to="/ranking" className={location.pathname === '/ranking' ? 'active' : ''}>
             <FaListOl size={18} style={{ marginRight: "6px" }} />
             <span>Ranking</span>
           </Link>
-          <Link 
-            to="/recompensas" 
-            className={location.pathname === '/recompensas' ? 'active' : ''}
-          >
+          <Link to="/recompensas" className={location.pathname === '/recompensas' ? 'active' : ''}>
             <FaGift size={18} style={{ marginRight: "6px" }} />
             <span>Recompensas</span>
           </Link>
@@ -63,7 +47,15 @@ function Navbar({ user, onLogout }) {
               <div className="user-avatar">{user.nombre.charAt(0)}</div>
             )}
             <div className="user-details">
-              <span className="user-name">{user.nombre}</span>
+              <span className="user-name">
+                {user.nombre}
+                {user.rachaDias > 0 && (
+                  <span className="user-streak">
+                    <FaFire size={16} color="#FF5722" style={{ marginLeft: "6px", marginRight: "4px" }} />
+                    {user.rachaDias}
+                  </span>
+                )}
+              </span>
               <span className="user-points">
                 <FaStar size={16} color="#FFD700" style={{ marginRight: "4px" }} />
                 {user.puntos} pts | Nivel {user.nivel}

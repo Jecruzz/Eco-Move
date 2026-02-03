@@ -4,12 +4,12 @@ import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './MapView.css';
-import { FaMapMarkerAlt, FaCheck, FaBicycle, FaWalking, FaBus, FaCarSide, FaLeaf } from 'react-icons/fa';
-import { GiScooter } from 'react-icons/gi';
+import { FaMapMarkerAlt, FaCheck, FaRoute, FaLeaf } from 'react-icons/fa';
+import Notification from './Notification';
 
 const API_URL = 'http://localhost:5000/api';
 
-// Icono verde para origen
+// Iconos personalizados
 const origenIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -19,7 +19,6 @@ const origenIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-// Icono rojo para destino
 const destinoIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
@@ -28,7 +27,6 @@ const destinoIcon = new L.Icon({
   popupAnchor: [1, -34],
   shadowSize: [41, 41]
 });
-
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -43,18 +41,50 @@ function ChangeView({ center }) {
   return null;
 }
 
+// 🚀 Velocidades promedio por transporte (km/h)
+const VELOCIDADES = {
+  caminata: 3,
+  bicicleta: 7,
+  scooter: 12,
+  transporte_publico: 13,
+  carpooling: 20
+};
+
+// 🚀 Función para calcular duración en minutos (número)
+const calcularDuracion = (tipoTransporte, distanciaKm) => {
+  const velocidad = VELOCIDADES[tipoTransporte] || 20;
+  const horas = distanciaKm / velocidad;
+  const minutos = Math.round(horas * 60);
+  return minutos; // 👈 siempre número
+};
+
+// 🚀 Función para mostrar duración en formato legible
+const mostrarDuracion = (minutos) => {
+  if (!minutos || minutos <= 0) return "0 min";
+  if (minutos >= 60) {
+    const h = Math.floor(minutos / 60);
+    const m = minutos % 60;
+    return `${h}h ${m}min`;
+  }
+  return `${minutos} min`;
+};
+
 function MapView({ user, onUpdateUser }) {
   const [origen, setOrigen] = useState(null);
   const [destino, setDestino] = useState(null);
+  const [ruta, setRuta] = useState([]);
+  const [distanciaReal, setDistanciaReal] = useState(0);
+  const [duracion, setDuracion] = useState(0); // 👈 ahora número
   const [formData, setFormData] = useState({
     tipoTransporte: 'bicicleta',
     origenNombre: '',
     destinoNombre: ''
   });
   const [loading, setLoading] = useState(false);
+  const [loadingRuta, setLoadingRuta] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [center, setCenter] = useState([-0.1807, -78.4678]); // Quito por defecto
+  const [center, setCenter] = useState([-0.1807, -78.4678]); // Quito
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -67,16 +97,59 @@ function MapView({ user, onUpdateUser }) {
     }
   }, []);
 
-  const calcularDistancia = (coord1, coord2) => {
-    const R = 6371; // Radio de la Tierra en km
-    const dLat = (coord2.lat - coord1.lat) * Math.PI / 180;
-    const dLon = (coord2.lng - coord1.lng) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(coord1.lat * Math.PI / 180) * Math.cos(coord2.lat * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+  useEffect(() => {
+    if (origen && destino) {
+      calcularRutaReal();
+    } else {
+      setRuta([]);
+      setDistanciaReal(0);
+      setDuracion(0);
+    }
+  }, [origen, destino, formData.tipoTransporte]);
+
+  const calcularRutaReal = async () => {
+    setLoadingRuta(true);
+    setError('');
+
+    try {
+      const profile = getOSRMProfile(formData.tipoTransporte);
+      const url = `https://router.project-osrm.org/route/v1/${profile}/${origen.lng},${origen.lat};${destino.lng},${destino.lat}?overview=full&geometries=geojson`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+        const route = data.routes[0];
+        const coordinates = route.geometry.coordinates.map(coord => [coord[1], coord[0]]);
+        
+        const distanciaKm = route.distance / 1000;
+        setRuta(coordinates);
+        setDistanciaReal(distanciaKm.toFixed(2));
+        setDuracion(calcularDuracion(formData.tipoTransporte, distanciaKm)); // 👈 número
+      } else {
+        setError('No se pudo calcular la ruta. Intenta con puntos más cercanos a calles.');
+        setRuta([]);
+        setDistanciaReal(0);
+        setDuracion(0);
+      }
+    } catch (err) {
+      console.error('Error calculando ruta:', err);
+      setError('Error al calcular la ruta por las calles');
+      setRuta([]);
+      setDistanciaReal(0);
+      setDuracion(0);
+    } finally {
+      setLoadingRuta(false);
+    }
+  };
+
+  const getOSRMProfile = (tipoTransporte) => {
+    switch (tipoTransporte) {
+      case 'bicicleta': return 'bike';
+      case 'caminata': return 'foot';
+      case 'scooter': return 'bike';
+      default: return 'car';
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -94,38 +167,35 @@ function MapView({ user, onUpdateUser }) {
       return;
     }
 
+    if (distanciaReal === 0) {
+      setError('No se pudo calcular la ruta. Verifica los puntos seleccionados.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const distancia = calcularDistancia(origen, destino);
-      
       await axios.post(`${API_URL}/mobility-logs`, {
         tipoTransporte: formData.tipoTransporte,
-        distancia,
-        origen: {
-          lat: origen.lat,
-          lng: origen.lng,
-          nombre: formData.origenNombre
-        },
-        destino: {
-          lat: destino.lat,
-          lng: destino.lng,
-          nombre: formData.destinoNombre
-        }
+        distancia: parseFloat(distanciaReal),
+        origen: { lat: origen.lat, lng: origen.lng, nombre: formData.origenNombre },
+        destino: { lat: destino.lat, lng: destino.lng, nombre: formData.destinoNombre },
+        duracion: duracion // 👈 número en minutos
       });
 
-      setSuccess('Viaje registrado exitosamente');
+      setSuccess(
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <FaCheck color="#000000" size={18} /> Viaje registrado exitosamente
+        </span>
+      );
       setOrigen(null);
       setDestino(null);
-      setFormData({
-        tipoTransporte: 'bicicleta',
-        origenNombre: '',
-        destinoNombre: ''
-      });
-      
+      setRuta([]);
+      setDistanciaReal(0);
+      setDuracion(0);
+      setFormData({ tipoTransporte: 'bicicleta', origenNombre: '', destinoNombre: '' });
       onUpdateUser();
-      
-      setTimeout(() => setSuccess(''), 3000);
+
     } catch (err) {
       setError(err.response?.data?.error || 'Error al registrar viaje');
     } finally {
@@ -140,37 +210,23 @@ function MapView({ user, onUpdateUser }) {
           <FaLeaf size={24} color="#4CAF50" style={{ marginRight: '10px' }} />
           Registrar Viaje Verde
         </h2>
-        
-        {success && (
-          <div className="success-message">
-            <FaCheck size={16} style={{ marginRight: '8px' }} />
-            {success}
-          </div>
-        )}
-        {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} className="map-form">
           <div className="form-group">
             <label>Tipo de Transporte</label>
             <select
               value={formData.tipoTransporte}
-              onChange={(e) => setFormData({...formData, tipoTransporte: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, tipoTransporte: e.target.value })}
             >
-              <option value="bicicleta">
-                Bicicleta
-              </option>
-              <option value="caminata">
-                Caminata
-              </option>
-              <option value="carpooling">
-                Carpooling
-              </option>
-              <option value="scooter">
-                Scooter Eléctrico
-              </option>
+              <option value="bicicleta">Bicicleta</option>
+              <option value="caminata">Caminata</option>
+              <option value="transporte_publico">Transporte Público</option>
+              <option value="carpooling">Carpooling</option>
+              <option value="scooter">Scooter Eléctrico</option>
             </select>
           </div>
 
+          {/* Origen */}
           <div className="form-group">
             <label>Nombre del Origen</label>
             <input
@@ -186,12 +242,18 @@ function MapView({ user, onUpdateUser }) {
               onClick={() => {
                 setError('');
                 setOrigen({ lat: center[0], lng: center[1] });
-                alert('Arrastra el marcador verde para ajustar el origen');
+                setSuccess(
+                  <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <FaMapMarkerAlt color="black" size={18} />
+                    Arrastra el marcador verde para ajustar el origen
+                  </span>
+                );
               }}
             >
               <FaMapMarkerAlt size={16} style={{ marginRight: '6px' }} />
               Marcar en mapa
             </button>
+
             {origen && (
               <small className="coords-info">
                 <FaCheck size={12} style={{ marginRight: '4px' }} />
@@ -200,6 +262,7 @@ function MapView({ user, onUpdateUser }) {
             )}
           </div>
 
+          {/* Destino */}
           <div className="form-group">
             <label>Nombre del Destino</label>
             <input
@@ -215,12 +278,18 @@ function MapView({ user, onUpdateUser }) {
               onClick={() => {
                 setError('');
                 setDestino({ lat: center[0], lng: center[1] });
-                alert('Arrastra el marcador rojo para ajustar el destino');
+                setSuccess(
+                  <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <FaMapMarkerAlt color="red" size={18} />
+                    Arrastra el marcador rojo para ajustar el destino
+                  </span>
+                );
               }}
             >
               <FaMapMarkerAlt size={16} style={{ marginRight: '6px' }} />
               Marcar en mapa
             </button>
+
             {destino && (
               <small className="coords-info">
                 <FaCheck size={12} style={{ marginRight: '4px' }} />
@@ -229,15 +298,30 @@ function MapView({ user, onUpdateUser }) {
             )}
           </div>
 
-          {origen && destino && (
-            <div className="distance-info">
-              <strong>Distancia:</strong> {calcularDistancia(origen, destino).toFixed(2)} km
+          {loadingRuta && (
+            <div className="route-info loading-route">
+              <FaRoute size={16} style={{ marginRight: '6px' }} />
+              Calculando ruta...
+            </div>
+          )}
+
+          {!loadingRuta && distanciaReal > 0 && (
+            <div className="route-info">
+              <div className="route-detail">
+                <FaRoute size={16} color="#4CAF50" />
+                <div>
+                  <strong>Distancia por calles:</strong> {distanciaReal} km
+                </div>
+              </div>
+              <div className="route-detail">
+                <strong>Tiempo estimado:</strong> {mostrarDuracion(duracion)}
+              </div>
             </div>
           )}
 
           <button 
             type="submit" 
-            disabled={loading || !origen || !destino}
+            disabled={loading || !origen || !destino || distanciaReal === 0}
             className="btn-submit"
           >
             {loading ? 'Registrando...' : (
@@ -255,11 +339,13 @@ function MapView({ user, onUpdateUser }) {
             Instrucciones:
           </h4>
           <ol>
-            <li>Haz clic en "Marcar en mapa" para origen - aparece marcador verde.</li>
-            <li>Arrastra el marcador hasta tu punto de inicio</li>
-            <li>Haz clic en "Marcar en mapa" para destino - aparece marcador rojo.</li>
-            <li>Arrastra el marcador hasta tu punto de llegada</li>
-            <li>Completa el formulario y pulsa "Registrar Viaje".</li>
+            <li>Selecciona el tipo de transporte</li>
+            <li>Haz clic en "Marcar en mapa" para origen - aparece marcador verde</li>
+            <li>Arrastra el marcador verde hasta tu punto de inicio</li>
+            <li>Haz clic en "Marcar en mapa" para destino - aparece marcador rojo</li>
+            <li>Arrastra el marcador rojo hasta tu punto de llegada</li>
+            <li>El sistema calculará la ruta por las calles automáticamente</li>
+            <li>Completa los nombres y pulsa "Registrar Viaje"</li>
           </ol>
         </div>
       </div>
@@ -314,18 +400,33 @@ function MapView({ user, onUpdateUser }) {
             </Marker>
           )}
 
-          {origen && destino && (
+          {ruta.length > 0 && (
             <Polyline
-              positions={[
-                [origen.lat, origen.lng],
-                [destino.lat, destino.lng]
-              ]}
+              positions={ruta}
               color="#4CAF50"
-              weight={4}
+              weight={5}
+              opacity={0.7}
             />
           )}
         </MapContainer>
       </div>
+
+      {/* ✅ Notificaciones flotantes */}
+      {success && (
+        <Notification
+          message={success}
+          type="success"
+          onClose={() => setSuccess("")}
+        />
+      )}
+
+      {error && (
+        <Notification
+          message={error}
+          type="error"
+          onClose={() => setError("")}
+        />
+      )}
     </div>
   );
 }
