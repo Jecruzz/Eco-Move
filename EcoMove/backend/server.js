@@ -122,6 +122,23 @@ const challengeProgressSchema = new mongoose.Schema({
   fechaCompletado: { type: Date }
 });
 
+const redeemedRewardSchema = new mongoose.Schema({
+  usuarioId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  rewardId: { type: mongoose.Schema.Types.ObjectId, ref: 'Reward', required: true },
+  nombre: { type: String, required: true },
+  descripcion: { type: String, required: true },
+  puntosNecesarios: { type: Number, required: true },
+  categoria: { type: String, required: true },
+  imagen: { type: String },
+  fechaCanje: { type: Date, default: Date.now },
+  estado: { 
+    type: String, 
+    enum: ['pendiente', 'procesando', 'entregado', 'cancelado'],
+    default: 'pendiente' 
+  },
+  codigoReferencia: { type: String, unique: true }
+});
+
 // Models
 const User = mongoose.model('User', userSchema);
 const MobilityLog = mongoose.model('MobilityLog', mobilityLogSchema);
@@ -129,6 +146,7 @@ const Reward = mongoose.model('Reward', rewardSchema);
 const Partner = mongoose.model('Partner', partnerSchema);
 const Challenge = mongoose.model('Challenge', challengeSchema);
 const ChallengeProgress = mongoose.model('ChallengeProgress', challengeProgressSchema);
+const RedeemedReward = mongoose.model('RedeemedReward', redeemedRewardSchema);
 
 // JWT Secret
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey123';
@@ -145,6 +163,11 @@ const authMiddleware = (req, res, next) => {
   } catch (error) {
     res.status(401).json({ error: 'Token inválido' });
   }
+};
+
+// Función para generar código único de referencia
+const generarCodigoReferencia = () => {
+  return 'ECO-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
 };
 
 // Función de impacto
@@ -405,6 +428,17 @@ app.get('/api/rewards/disponibles', authMiddleware, async (req, res) => {
   }
 });
 
+// 🆕 Endpoint para obtener recompensas canjeadas del usuario
+app.get('/api/rewards/canjeadas', authMiddleware, async (req, res) => {
+  try {
+    const canjeadas = await RedeemedReward.find({ usuarioId: req.userId })
+      .sort({ fechaCanje: -1 });
+    res.json(canjeadas);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.post('/api/rewards/canjear/:id', authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
@@ -414,16 +448,36 @@ app.post('/api/rewards/canjear/:id', authMiddleware, async (req, res) => {
     if (!reward.activa || reward.stock <= 0) return res.status(400).json({ error: 'Recompensa no disponible' });
     if (user.puntos < reward.puntosNecesarios) return res.status(400).json({ error: 'Puntos insuficientes' });
     
+    // Descontar puntos y stock
     user.puntos -= reward.puntosNecesarios;
     reward.stock -= 1;
     
+    // Generar código de referencia único
+    const codigoReferencia = generarCodigoReferencia();
+    
+    // Crear registro de recompensa canjeada
+    const recompensaCanjeada = new RedeemedReward({
+      usuarioId: req.userId,
+      rewardId: reward._id,
+      nombre: reward.nombre,
+      descripcion: reward.descripcion,
+      puntosNecesarios: reward.puntosNecesarios,
+      categoria: reward.categoria,
+      imagen: reward.imagen,
+      codigoReferencia: codigoReferencia,
+      estado: 'pendiente'
+    });
+    
     await user.save();
     await reward.save();
+    await recompensaCanjeada.save();
     
     res.json({ 
       mensaje: '¡Recompensa canjeada exitosamente!',
       puntosRestantes: user.puntos,
-      recompensa: reward.nombre
+      recompensa: reward.nombre,
+      codigoReferencia: codigoReferencia,
+      estado: 'pendiente'
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
