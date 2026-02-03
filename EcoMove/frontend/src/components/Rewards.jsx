@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Rewards.css';
+import Notification from './Notification';
 import { 
   FaStar, FaGift, FaLock, FaCheck, FaBox, FaLightbulb, 
-  FaWalking, FaBicycle, FaBus, FaCarSide, FaTimesCircle 
+  FaWalking, FaBicycle, FaBus, FaCarSide, FaClock, FaCheckCircle,
+  FaTrophy, FaFire
 } from 'react-icons/fa';
 import { GiScooter, GiDiamondRing } from 'react-icons/gi';
 
@@ -15,7 +17,7 @@ function Rewards({ user }) {
   const [canjeadas, setCanjeadas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [vista, setVista] = useState('todas');
-  const [mensaje, setMensaje] = useState({ texto: '', tipo: '' });
+  const [notification, setNotification] = useState(null);
   const [canjeando, setCanjeando] = useState(null);
 
   useEffect(() => {
@@ -33,7 +35,6 @@ function Rewards({ user }) {
       );
       setDisponibles(disp);
 
-      // 👇 pedir recompensas canjeadas del usuario autenticado
       const token = localStorage.getItem('token');
       if (token) {
         const canjeadasRes = await axios.get(`${API_URL}/rewards/canjeadas`, {
@@ -44,14 +45,18 @@ function Rewards({ user }) {
 
     } catch (error) {
       console.error('Error cargando recompensas:', error);
+      showNotification('Error al cargar las recompensas', 'error');
     } finally {
       setLoading(false);
     }
   };
 
+  const showNotification = (message, type) => {
+    setNotification({ message, type });
+  };
+
   const canjearRecompensa = async (rewardId) => {
     setCanjeando(rewardId);
-    setMensaje({ texto: '', tipo: '' });
     
     try {
       const token = localStorage.getItem('token');
@@ -59,34 +64,36 @@ function Rewards({ user }) {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      setMensaje({ 
-        texto: (
-          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <FaCheck color="#4CAF50" size={18} />
-            {res.data.mensaje} Te quedan {res.data.puntosRestantes} puntos.
-          </span>
-        ),
-        tipo: 'success' 
-      });
+      showNotification(
+        `${res.data.mensaje} Pronto nos pondremos en contacto para gestionar tu recompensa. Código: ${res.data.codigoReferencia}`,
+        'success'
+      );
       
       setTimeout(() => {
         cargarRecompensas();
-        setMensaje({ texto: '', tipo: '' });
-      }, 4000);
+        if (user) {
+          user.puntos = res.data.puntosRestantes;
+        }
+      }, 3000);
       
     } catch (error) {
-      setMensaje({ 
-        texto: (
-          <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <FaTimesCircle color="#C62828" size={18} />
-            {error.response?.data?.error || 'Error al canjear recompensa'}
-          </span>
-        ),
-        tipo: 'error' 
-      });
+      showNotification(
+        error.response?.data?.error || 'Error al canjear recompensa',
+        'error'
+      );
     } finally {
       setCanjeando(null);
     }
+  };
+
+  const getEstadoBadge = (estado) => {
+    const badges = {
+      pendiente: { texto: 'Pendiente', color: '#FF9800', icon: FaClock },
+      procesando: { texto: 'Procesando', color: '#2196F3', icon: FaClock },
+      entregado: { texto: 'Entregado', color: '#4CAF50', icon: FaCheckCircle },
+      cancelado: { texto: 'Cancelado', color: '#f44336', icon: FaLock }
+    };
+    return badges[estado] || badges.pendiente;
   };
 
   if (loading) {
@@ -106,13 +113,23 @@ function Rewards({ user }) {
 
   return (
     <div className="rewards-page">
+      {notification && (
+        <Notification
+          message={notification.message}
+          type={notification.type}
+          onClose={() => setNotification(null)}
+        />
+      )}
+
       <div className="rewards-hero">
         <div className="hero-content">
           <h1>
-            <GiDiamondRing size={36} style={{ marginRight: '12px' }} />
-            Catálogo de Recompensas
+            <FaGift size={38} style={{ marginRight: '12px' }} />
+            En EcoMove ¡Ganas moviéndote!
           </h1>
-          <p>Canjea tus puntos por beneficios exclusivos</p>
+            <p>
+              Cada viaje sostenible suma puntos que puedes transformar en premios, beneficios y experiencias únicas.
+            </p>
         </div>
         <div className="hero-points">
           <div className="points-badge">
@@ -126,12 +143,6 @@ function Rewards({ user }) {
           </div>
         </div>
       </div>
-
-      {mensaje.texto && (
-        <div className={`mensaje-flotante ${mensaje.tipo}`}>
-          {mensaje.texto}
-        </div>
-      )}
 
       <div className="rewards-filters">
         <button
@@ -160,29 +171,103 @@ function Rewards({ user }) {
             <FaGift size={80} color="#999" />
           </div>
           <h3>No hay recompensas en esta vista</h3>
-          <p>Sigue acumulando puntos para desbloquear beneficios</p>
+          <p>
+            {vista === 'canjeadas' 
+              ? 'Aún no has canjeado ninguna recompensa' 
+              : 'Sigue acumulando puntos para desbloquear beneficios'}
+          </p>
         </div>
       ) : (
         <div className="rewards-grid">
-          {recompensas.map(reward => {
-            const puedeReclamar = user.puntos >= reward.puntosNecesarios && reward.stock > 0;
-            const faltante = Math.max(0, reward.puntosNecesarios - user.puntos);
-            const progreso = Math.min(100, (user.puntos / reward.puntosNecesarios) * 100);
-
-            return (
-              <div 
-                key={reward._id} 
-                className={`reward-card-modern ${puedeReclamar ? 'available' : 'locked'}`}
-              >
-                {!puedeReclamar && (
-                  <div className="lock-overlay">
-                    <span className="lock-icon">
-                      <FaLock size={48} color="white" />
+          {vista === 'canjeadas' ? (
+            // Vista especial para recompensas canjeadas
+            canjeadas.map(canje => {
+              const estadoBadge = getEstadoBadge(canje.estado);
+              const IconoEstado = estadoBadge.icon;
+              
+              return (
+                <div key={canje._id} className="reward-card-canjeada">
+                  <div className="reward-header">
+                    {canje.imagen ? (
+                      <img 
+                        src={`http://localhost:5000${canje.imagen}`} 
+                        alt={canje.nombre}
+                        className="reward-img"
+                      />
+                    ) : (
+                      <div className="reward-placeholder">
+                        <span className="placeholder-icon">
+                          <FaGift size={60} color="white" />
+                        </span>
+                      </div>
+                    )}
+                    
+                    <span 
+                      className="estado-badge" 
+                      style={{ background: estadoBadge.color }}
+                    >
+                      <IconoEstado size={14} style={{ marginRight: '6px' }} />
+                      {estadoBadge.texto}
                     </span>
                   </div>
-                )}
 
-                <div className="reward-header">
+                  <div className="reward-body">
+                    <h3 className="reward-title">{canje.nombre}</h3>
+                    <p className="reward-desc">{canje.descripcion}</p>
+
+                    <div className="canje-info">
+                      <div className="info-row">
+                        <span className="info-label">Código:</span>
+                        <span className="info-value codigo">{canje.codigoReferencia}</span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">Fecha:</span>
+                        <span className="info-value">
+                          {new Date(canje.fechaCanje).toLocaleDateString('es-ES', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric'
+                          })}
+                        </span>
+                      </div>
+                      <div className="info-row">
+                        <span className="info-label">Puntos:</span>
+                        <span className="info-value">
+                          <FaStar size={14} color="#FFD700" style={{ marginRight: '4px' }} />
+                          {canje.puntosNecesarios.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="mensaje-contacto">
+                      <FaCheckCircle size={18} color="#4CAF50" />
+                      <p>Pronto nos pondremos en contacto contigo para gestionar tu recompensa.</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            // Vista normal para todas y disponibles
+            recompensas.map(reward => {
+              const puedeReclamar = user.puntos >= reward.puntosNecesarios && reward.stock > 0;
+              const faltante = Math.max(0, reward.puntosNecesarios - user.puntos);
+              const progreso = Math.min(100, (user.puntos / reward.puntosNecesarios) * 100);
+
+              return (
+                <div 
+                  key={reward._id} 
+                  className={`reward-card-modern ${puedeReclamar ? 'available' : 'locked'}`}
+                >
+                  {!puedeReclamar && (
+                    <div className="lock-overlay">
+                      <span className="lock-icon">
+                        <FaLock size={48} color="white" />
+                      </span>
+                    </div>
+                  )}
+
+                 <div className="reward-header">
                   {reward.imagen ? (
                     <img 
                       src={`http://localhost:5000${reward.imagen}`} 
@@ -196,73 +281,85 @@ function Rewards({ user }) {
                       </span>
                     </div>
                   )}
-                  
-                  {puedeReclamar && (
-                    <span className="disponible-badge">
-                      <FaCheck size={14} style={{ marginRight: '6px' }} />
-                      Disponible
-                    </span>
-                  )}
                 </div>
 
-                <div className="reward-body">
-                  <h3 className="reward-title">{reward.nombre}</h3>
-                  <p className="reward-desc">{reward.descripcion}</p>
 
-                  <div className="reward-info">
-                    <div className="info-item">
-                      <span className="info-icon">
-                        <FaStar size={18} color="#FFD700" />
-                      </span>
-                      <span className="info-text">{reward.puntosNecesarios.toLocaleString()} puntos</span>
-                    </div>
-                    
-                    {reward.stock && (
+                  <div className="reward-body">
+                    <h3 className="reward-title">{reward.nombre}</h3>
+                    <p className="reward-desc">{reward.descripcion}</p>
+
+                    <div className="reward-info">
                       <div className="info-item">
                         <span className="info-icon">
-                          <FaBox size={18} color="#666" />
+                          <FaStar size={18} color="#FFD700" />
                         </span>
-                        <span className="info-text">{reward.stock} disponibles</span>
+                        <span className="info-text">{reward.puntosNecesarios.toLocaleString()} puntos</span>
                       </div>
-                    )}
-                  </div>
-
-                  {!puedeReclamar && faltante > 0 && (
-                    <div className="progress-section">
-                      <div className="progress-bar-container">
-                        <div 
-                          className="progress-bar-fill" 
-                          style={{ width: `${progreso}%` }}
-                        ></div>
-                      </div>
-                      <p className="progress-text">
-                        Te faltan {faltante.toLocaleString()} puntos
-                      </p>
+                      
+                      {reward.stock && (
+                        <div className="info-item">
+                          <span className="info-icon">
+                            <FaBox size={18} color="#666" />
+                          </span>
+                          <span className="info-text">{reward.stock} disponibles</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  <button
-                    className={`btn-canjear ${puedeReclamar ? 'enabled' : 'disabled'}`}
-                    onClick={() => puedeReclamar && canjearRecompensa(reward._id)}
-                    disabled={!puedeReclamar || canjeando === reward._id}
-                  >
-                    {canjeando === reward._id ? (
-                      <span>Canjeando...</span>
-                    ) : puedeReclamar ? (
-                      <span>
-                        <FaCheck size={16} style={{ marginRight: '6px' }} />
-                        Canjear Ahora
-                      </span>
-                    ) : (
-                      <span>
-                        <FaLock size={16} style={{ marginRight: '6px' }} />
-                        Bloqueado
-                      </span>
+
+                    {!puedeReclamar && faltante > 0 && (
+                      <div className="progress-section">
+                        <div className="progress-header">
+                          <span className="progress-title">
+                            <FaTrophy size={16} />
+                            Progreso
+                          </span>
+                          <span className="progress-percentage">{progreso.toFixed(0)}%</span>
+                        </div>
+                        
+                        <div className="progress-bar-container">
+                          <div 
+                            className="progress-bar-fill" 
+                            style={{ width: `${progreso}%` }}
+                          ></div>
+                        </div>
+                        
+                        <div className="progress-details">
+                          <span className="progress-text">
+                            <FaFire size={14} />
+                            Te faltan {faltante.toLocaleString()} puntos
+                          </span>
+                          <span className="progress-points">
+                            <span className="current">{user.puntos.toLocaleString()}</span>
+                            /{reward.puntosNecesarios.toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
                     )}
-                  </button>
+                    
+                    <button
+                      className={`btn-canjear ${puedeReclamar ? 'enabled' : 'disabled'}`}
+                      onClick={() => puedeReclamar && canjearRecompensa(reward._id)}
+                      disabled={!puedeReclamar || canjeando === reward._id}
+                    >
+                      {canjeando === reward._id ? (
+                        <span>Canjeando...</span>
+                      ) : puedeReclamar ? (
+                        <span>
+                          <FaCheck size={16} style={{ marginRight: '6px' }} />
+                          Canjear Ahora
+                        </span>
+                      ) : (
+                        <span>
+                          <FaLock size={16} style={{ marginRight: '6px' }} />
+                          Bloqueado
+                        </span>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       )}
 
