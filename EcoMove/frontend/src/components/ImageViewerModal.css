@@ -1,0 +1,105 @@
+.image-viewer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.image-viewer-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: zoomIn 0.3s ease;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.image-viewer-close {
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  background: rgba(0, 0, 0, 0.479);   /* igual que modal-close-btn */
+  border: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #b13a3a;       /* rojo para la X */
+  font-size: 0,1;     /* X más grande y visible */
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+.image-viewer-close:hover {
+  background: rgba(150, 75, 75, 0.575); /* rojo más intenso */
+  transform: rotate(90deg);
+}
+
+.image-viewer-img {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 15px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  object-fit: contain;
+}
+
+.image-viewer-info {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 12px 24px;
+  border-radius: 25px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.image-viewer-info p {
+  color: white;
+  margin: 0;
+  font-weight: 600;
+  font-size: 1.1em;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .image-viewer-close {
+    top: 10px;
+    right: 10px;
+  }
+
+  .image-viewer-img {
+    max-height: 70vh;
+  }
+}

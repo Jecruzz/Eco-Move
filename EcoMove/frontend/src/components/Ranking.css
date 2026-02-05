@@ -34,6 +34,7 @@
 .podium-place {
   flex: 1;
   text-align: center;
+  cursor: pointer;
 }
 
 .place-1 {
@@ -47,11 +48,12 @@
   border-radius: 12px;
   box-shadow: var(--shadow);
   position: relative;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .podium-card:hover {
   transform: scale(1.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 
 /* Imagen circular podio */
@@ -79,6 +81,28 @@
   transform: scale(1.2);
 }
 
+.user-avatar-large {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5em;
+  font-weight: 700;
+  border: 3px solid var(--primary);
+  margin-bottom: 10px;
+}
+
+.place-1 .user-avatar-large {
+  width: 130px;
+  height: 130px;
+  font-size: 3em;
+  border: 4px solid gold;
+}
+
 /* Medallas */
 .medal {
   font-size: 1.5rem;
@@ -102,6 +126,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ranking-item:hover {
+  background: #E0E0E0;
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Bloque izquierda: número + imagen + nombre/nivel */
@@ -123,6 +155,25 @@
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
+  border: 2px solid var(--secondary);
+  transition: transform 0.3s ease;
+}
+
+.ranking-item:hover .ranking-image-small {
+  transform: scale(1.1);
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  font-weight: 700;
   border: 2px solid var(--secondary);
 }
 
@@ -147,4 +198,35 @@
   display: flex;
   align-items: center;
   font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .podium {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .podium-place {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .place-1 {
+    transform: translateY(0);
+  }
+
+  .ranking-item {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .ranking-left {
+    flex-direction: column;
+  }
+
+  .user-stats {
+    flex-direction: column;
+    gap: 5px;
+  }
 }

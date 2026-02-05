@@ -1,0 +1,305 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background: var(--white);
+  border-radius: 20px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.user-profile-modal {
+  padding: 30px;
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 25px;
+  right: 15px;
+  background: rgba(245, 5, 5, 0.1);
+  border: none;
+  width: 60px;
+  height: 60px;
+  border-radius: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #c53030;
+  font-size: 0,1;
+  transition: all 0.3s;
+  z-index: 10;
+}
+
+.modal-close-btn:hover {
+  background: rgba(175, 28, 28, 0.575);
+  transform: rotate(90deg);
+}
+
+.modal-header {
+  text-align: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid var(--light);
+}
+
+.modal-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--primary);
+  margin-bottom: 15px;
+}
+
+.modal-avatar-placeholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: var(--white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3em;
+  font-weight: 700;
+  border: 4px solid var(--primary);
+  margin-bottom: 15px;
+}
+
+.modal-header h2 {
+  color: var(--dark);
+  margin-bottom: 10px;
+  font-size: 1.8em;
+}
+
+.modal-racha {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: bold;
+  color: #FF5722;
+  background: rgba(255, 87, 34, 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+.modal-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.modal-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: var(--light);
+  border-radius: 12px;
+  transition: all 0.3s;
+}
+
+.modal-stat-card:hover {
+  background: #E0E0E0;
+  transform: translateY(-2px);
+}
+
+.modal-stat-card .stat-icon {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+
+.modal-stat-card .stat-info h3 {
+  font-size: 1.4em;
+  color: var(--dark);
+  margin-bottom: 2px;
+}
+
+.modal-stat-card .stat-info p {
+  color: #666;
+  font-size: 0.85em;
+  margin: 0;
+}
+
+.modal-level-progress {
+  background: var(--light);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.modal-level-progress .progress-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.modal-level-progress .progress-bar {
+  height: 25px;
+  background: var(--white);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.modal-level-progress .progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  border-radius: 12px;
+  transition: width 0.5s ease;
+}
+
+.modal-medallas {
+  margin-bottom: 20px;
+}
+
+.modal-medallas h3 {
+  color: var(--dark);
+  margin-bottom: 15px;
+  font-size: 1.3em;
+  display: flex;
+  align-items: center;
+}
+
+.medallas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.medalla-badge {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  font-size: 0.9em;
+  transition: all 0.3s;
+}
+
+.medalla-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.modal-transport-stats h3 {
+  color: var(--dark);
+  margin-bottom: 15px;
+  font-size: 1.3em;
+}
+
+.transport-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transport-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: var(--light);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.transport-item:hover {
+  background: #E0E0E0;
+}
+
+.transport-color {
+  width: 8px;
+  height: 40px;
+  border-radius: 4px;
+}
+
+.transport-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.transport-name {
+  font-weight: 600;
+  color: var(--dark);
+  font-size: 0.95em;
+}
+
+.transport-count {
+  color: #666;
+  font-size: 0.85em;
+}
+
+.transport-distance {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.95em;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 95%;
+    padding: 20px;
+  }
+
+  .user-profile-modal {
+    padding: 20px;
+  }
+
+  .modal-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-avatar,
+  .modal-avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    font-size: 2.5em;
+  }
+
+  .modal-header h2 {
+    font-size: 1.5em;
+  }
+
+  .medallas-grid {
+    grid-template-columns: 1fr;
+  }
+}

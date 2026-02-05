@@ -18,9 +18,9 @@ function Landing() {
 
         <div className="hero-content">
           <h1 className="hero-title">
-            Movilidad Sostenible,<br />
-            <span className="gradient-text">Recompensas Reales</span>
+            Movilidad Sostenible <span className="gradient-text">Recompensas Reales</span>
           </h1>
+
           <p className="hero-subtitle">
             Únete a la comunidad que está transformando la forma de moverse por la ciudad.
             Gana puntos por cada viaje sostenible y canjéalos por increíbles beneficios.

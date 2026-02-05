@@ -77,7 +77,7 @@ function Challenges({ user, onUpdateUser }) {
   return (
     <div className="challenges-page">
       <div className="challenges-header">
-        <h1>Retos Diarios</h1>
+        <h1>!Hora de subir el nivel!</h1>
         <p>Completa retos y gana puntos extra</p>
       </div>
 
@@ -161,7 +161,7 @@ function Challenges({ user, onUpdateUser }) {
 
           {retosCompletados.length > 0 && (
             <section className="challenges-section">
-              <h2>Retos Completados</h2>
+              <h2 style={{ color: "black" }}>Retos Completados <FaCheck size={20} color="green" /></h2>
               <div className="challenges-grid">
                 {retosCompletados.map(challenge => (
                   <div key={challenge._id} className="challenge-card completed">

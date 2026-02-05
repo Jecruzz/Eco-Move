@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Ranking.css';
+import UserProfileModal from './UserProfileModal';
 
 const API_URL = 'http://localhost:5000/api';
 
 function Ranking() {
   const [ranking, setRanking] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUserId, setSelectedUserId] = useState(null);
 
   useEffect(() => {
     cargarRanking();
@@ -21,6 +23,14 @@ function Ranking() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleUserClick = (userId) => {
+    setSelectedUserId(userId);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedUserId(null);
   };
 
   if (loading) {
@@ -44,7 +54,11 @@ function Ranking() {
       {/* Podio con los 3 primeros */}
       <div className="podium">
         {ranking.slice(0, 3).map((user, index) => (
-          <div key={user._id} className={`podium-place place-${index + 1}`}>
+          <div 
+            key={user.id} 
+            className={`podium-place place-${index + 1}`}
+            onClick={() => handleUserClick(user.id)}
+          >
             <div className="podium-card">
               {user.imagen ? (
                 <img
@@ -59,14 +73,13 @@ function Ranking() {
               <h3>{user.nombre}</h3>
               <div className="podium-stats">
                 <p><strong>{user.puntos}</strong> puntos</p>
-                <p>{user.co2Ahorrado.toFixed(1)} kg CO₂</p>
+                <p>{user.co2Ahorrado.toFixed(1)} kg CO2</p>
                 <p>Nivel {user.nivel}</p>
                 <p>
                   <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                     <span role="img" aria-label="fire">🔥</span> {user.rachaDias || 0} días
                   </span>
                 </p>
-
               </div>
             </div>
           </div>
@@ -76,7 +89,11 @@ function Ranking() {
       {/* Lista del resto */}
       <div className="ranking-list">
         {ranking.slice(3).map((user, index) => (
-          <div key={user._id} className="ranking-item">
+          <div 
+            key={user.id} 
+            className="ranking-item"
+            onClick={() => handleUserClick(user.id)}
+          >
             <div className="ranking-left">
               <span className="rank-number">{index + 4}</span>
               {user.imagen ? (
@@ -93,16 +110,23 @@ function Ranking() {
                 <span className="user-level">Nivel {user.nivel}</span>
               </div>
             </div>
-              <div className="user-stats">
-                <span className="stat-value">{user.puntos} pts</span>
-                <span className="stat-value">{user.co2Ahorrado.toFixed(1)} kg CO₂</span>
-                <span className="stat-value">
-                  <span role="img" aria-label="fire">🔥</span> {user.rachaDias || 0} días
-                </span>
-              </div>
+            <div className="user-stats">
+              <span className="stat-value">{user.puntos} pts</span>
+              <span className="stat-value">{user.co2Ahorrado.toFixed(1)} kg CO2</span>
+              <span className="stat-value">
+                <span role="img" aria-label="fire">🔥</span> {user.rachaDias || 0} días
+              </span>
+            </div>
           </div>
         ))}
       </div>
+
+      {selectedUserId && (
+        <UserProfileModal 
+          userId={selectedUserId} 
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 }

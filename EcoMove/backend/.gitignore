@@ -1,0 +1,7 @@
+.env
+
+backend/uploads/*
+
+
+!backend/uploads/recompensas/
+!backend/uploads/recompensas/**

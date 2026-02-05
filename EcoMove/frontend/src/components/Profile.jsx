@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './Profile.css';
-import { FaStar, FaBullseye, FaGlobeAmericas, FaBicycle, FaMedal, FaCalendarAlt, FaWalking, FaBus, FaCarSide, FaArrowRight, FaFire } from 'react-icons/fa';
+import { FaStar, FaBullseye, FaGlobeAmericas, FaBicycle, FaMedal, FaCalendarAlt, FaWalking, FaBus, FaCarSide, FaArrowRight, FaFire, FaCog } from 'react-icons/fa';
 import { GiScooter } from 'react-icons/gi';
+import ProfileSettings from './ProfileSettings';
+import ImageViewerModal from './ImageViewerModal';
 
 const API_URL = 'http://localhost:5000/api';
 
@@ -27,9 +29,12 @@ const MEDALLA_COLORES = {
   "Mes de Impacto": "#004D40"
 };
 
-function Profile({ user, onUpdateUser }) {
+function Profile({ user, onUpdateUser, onLogout }) {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showImageViewer, setShowImageViewer] = useState(false);
+  const [currentUser, setCurrentUser] = useState(user);
 
   useEffect(() => {
     cargarHistorial();
@@ -37,13 +42,37 @@ function Profile({ user, onUpdateUser }) {
 
   const cargarHistorial = async () => {
     try {
-      const res = await axios.get(`${API_URL}/mobility-logs/me`);
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`${API_URL}/mobility-logs/me`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setLogs(res.data);
       if (onUpdateUser) onUpdateUser();
     } catch (error) {
       console.error('Error cargando historial:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleUpdateUser = (updatedUser) => {
+    setCurrentUser(updatedUser);
+    if (onUpdateUser) {
+      onUpdateUser(updatedUser);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    if (onLogout) {
+      onLogout();
+    }
+  };
+
+  const handleImageClick = () => {
+    if (currentUser.imagen) {
+      setShowImageViewer(true);
     }
   };
 
@@ -55,30 +84,40 @@ function Profile({ user, onUpdateUser }) {
     scooter: { icon: <GiScooter size={24} />, name: 'Scooter', color: '#F44336' }
   };
 
-  const progresoPorcentaje = ((user.puntos % 100) / 100) * 100;
-  const puntosParaSiguienteNivel = 100 - (user.puntos % 100);
+  const progresoPorcentaje = ((currentUser.puntos % 100) / 100) * 100;
+  const puntosParaSiguienteNivel = 100 - (currentUser.puntos % 100);
 
   return (
     <div className="profile-container">
       <div className="profile-header">
         <div className="profile-avatar-section">
-          {user.imagen ? (
+          {currentUser.imagen ? (
             <img
-              src={`http://localhost:5000${user.imagen}`}
-              alt={user.nombre}
-              className="profile-avatar-large"
+              src={`http://localhost:5000${currentUser.imagen}`}
+              alt={currentUser.nombre}
+              className="profile-avatar-large clickable-avatar"
+              onClick={handleImageClick}
+              title="Click para ver en grande"
             />
           ) : (
-            <div className="profile-avatar-placeholder">{user.nombre.charAt(0)}</div>
+            <div className="profile-avatar-placeholder">{currentUser.nombre.charAt(0)}</div>
           )}
 
           <div className="profile-info">
-            <h1>{user.nombre}</h1>
-            <p className="profile-email">{user.email}</p>
-            {/* 👇 Racha al lado del nombre */}
+            <div className="profile-name-row">
+              <h1>{currentUser.nombre}</h1>
+              <button 
+                className="profile-settings-btn"
+                onClick={() => setShowSettings(true)}
+                title="Configuración"
+              >
+                <FaCog size={18} />
+              </button>
+            </div>
+            <p className="profile-email">{currentUser.email}</p>
             <div className="profile-racha-inline">
               <FaFire size={20} color="#FF5722" style={{ marginRight: "6px" }} />
-              <span>{user.rachaDias || 0}</span>
+              <span>{currentUser.rachaDias || 0}</span>
             </div>
           </div>
         </div>
@@ -89,7 +128,7 @@ function Profile({ user, onUpdateUser }) {
               <FaStar size={28} color="#FFD700" />
             </div>
             <div>
-              <h3>{user.puntos}</h3>
+              <h3>{currentUser.puntos}</h3>
               <p>Puntos Totales</p>
             </div>
           </div>
@@ -99,7 +138,7 @@ function Profile({ user, onUpdateUser }) {
               <FaBullseye size={28} color="#eb0000ff" />
             </div>
             <div>
-              <h3>Nivel {user.nivel}</h3>
+              <h3>Nivel {currentUser.nivel}</h3>
               <p>{puntosParaSiguienteNivel} pts al siguiente</p>
             </div>
           </div>
@@ -109,7 +148,7 @@ function Profile({ user, onUpdateUser }) {
               <FaGlobeAmericas size={28} color="#1100ffff" />
             </div>
             <div>
-              <h3>{user.co2Ahorrado?.toFixed(1)} kg</h3>
+              <h3>{currentUser.co2Ahorrado?.toFixed(1)} kg</h3>
               <p>CO₂ Ahorrado</p>
             </div>
           </div>
@@ -119,7 +158,7 @@ function Profile({ user, onUpdateUser }) {
               <FaBicycle size={28} color="#000000ff" />
             </div>
             <div>
-              <h3>{user.stats?.totalViajes || 0}</h3>
+              <h3>{currentUser.stats?.totalViajes || 0}</h3>
               <p>Viajes Realizados</p>
             </div>
           </div>
@@ -128,7 +167,7 @@ function Profile({ user, onUpdateUser }) {
               <FaFire size={28} color="#FF5722" />
             </div>
             <div>
-              <h3>{user.rachaDias || 0}</h3>
+              <h3>{currentUser.rachaDias || 0}</h3>
               <p>Días de Racha</p>
             </div>
           </div>
@@ -137,8 +176,8 @@ function Profile({ user, onUpdateUser }) {
 
       <div className="level-progress">
         <div className="progress-info">
-          <span>Nivel {user.nivel}</span>
-          <span>{user.puntos % 100}/100 pts</span>
+          <span>Nivel {currentUser.nivel}</span>
+          <span>{currentUser.puntos % 100}/100 pts</span>
         </div>
         <div className="progress-bar">
           <div 
@@ -148,15 +187,14 @@ function Profile({ user, onUpdateUser }) {
         </div>
       </div>
 
-      {/* Sección de logros */}
-      {user.medallas && user.medallas.length > 0 && (
+      {currentUser.medallas && currentUser.medallas.length > 0 && (
         <div className="profile-medallas">
           <h2>
             <FaMedal size={22} color="#FFD700" style={{ marginRight: '8px' }} />
             Tus Logros
           </h2>
           <div className="medallas-showcase">
-            {user.medallas.map((medalla, index) => (
+            {currentUser.medallas.map((medalla, index) => (
               <div 
                 key={index} 
                 className="medalla-item"
@@ -236,6 +274,23 @@ function Profile({ user, onUpdateUser }) {
           </div>
         )}
       </div>
+
+      {showSettings && (
+        <ProfileSettings
+          user={currentUser}
+          onClose={() => setShowSettings(false)}
+          onUpdateUser={handleUpdateUser}
+          onDeleteAccount={handleDeleteAccount}
+        />
+      )}
+
+      {showImageViewer && currentUser.imagen && (
+        <ImageViewerModal
+          imageUrl={`http://localhost:5000${currentUser.imagen}`}
+          userName={currentUser.nombre}
+          onClose={() => setShowImageViewer(false)}
+        />
+      )}
     </div>
   );
 }
