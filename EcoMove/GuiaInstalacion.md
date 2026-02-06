@@ -31,53 +31,54 @@ Antes de comenzar, asegúrate de tener instalado:
 
 ## Instalación
 
-Clonar el repositorio:
+## Clonar el repositorio:
 
-```bash
 git clone https://github.com/Jecruzz/Eco-Move.git
 cd Eco-Move
 
-Instalar dependencias del frontend:
+## Instalar dependencias del frontend:
 
 cd frontend
 npm install
 
-Instalar dependencias del backend:
+## Instalar dependencias del backend:
 cd ../backend
 npm install
 
-Configuración
-Variables de entorno
+
+## Configuración
+## Variables de entorno
 En la carpeta backend, crea un archivo .env con la siguiente configuración:
+
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/ecomove
 PG_URI=postgres://usuario:password@localhost:5432/ecomove
 JWT_SECRET=tu_clave_secreta
 
-# Configuración de Backups
+## Configuración de Backups
 BACKUP_SCHEDULE=0 2 * * * ###cada 2AM
 BACKUP_ON_START=false
 
-Gestión de Backups y Automatización
+## Gestión de Backups y Automatización
 El sistema utiliza tareas programadas (Cron) para garantizar la integridad de los datos en la arquitectura híbrida.
 
-Comandos de Backup
+## Comandos de Backup
 Ejecutar desde la carpeta backend:
 
-Realizar backup inmediato:
+## Realizar backup inmediato:
 npm run backup
 
-Listar backups disponibles:
+## Listar backups disponibles:
 npm run backup:list
 
-Restaurar un backup específico:
+## Restaurar un backup específico:
 npm run backup:restore <nombre_archivo>
 
 
-Limpiar backups antiguos:
+## Limpiar backups antiguos:
 npm run backup:cleanup
 
-····Servicio Automático (Cron)
+## Servicio Automático (Cron)
 ··Para mantener el sistema de respaldo funcionando permanentemente en segundo plano, se recomienda el uso de PM2:
 # Iniciar servicio de backup
 pm2 start backup-service.js --name backup-service
@@ -97,7 +98,7 @@ Puedes modificar BACKUP_SCHEDULE en el archivo .env siguiendo estos ejemplos:
 
 */30 * * * * = Cada 30 minutos
 
-##Configuraciòn
+## Configuraciòn
 ···Variables de entorno
 En la carpeta backend, crea un archivo .env con la siguiente configuración:
 PORT=5000
