@@ -1,97 +1,101 @@
-Justificación de Tecnologías – Eco-Move
+# Justificación de Tecnologías – Eco-Move
 
-Para el desarrollo de Eco-Move se seleccionó un conjunto de tecnologías modernas que permiten crear una aplicación web eficiente, escalable y fácil de mantener. Cada herramienta fue elegida considerando su rendimiento, facilidad de uso y adecuación a los objetivos del proyecto.
+Para el desarrollo de **Eco-Move** se seleccionó un conjunto de tecnologías modernas que garantizan eficiencia, escalabilidad y facilidad de mantenimiento. La elección de cada herramienta se fundamenta en su rendimiento, compatibilidad y adecuación a los objetivos del proyecto: fomentar la movilidad sostenible mediante una plataforma digital confiable.
 
-React (Frontend)
+---
 
-Se utilizó React para la construcción de la interfaz de usuario debido a su enfoque basado en componentes.
+## Frontend
 
-Permite desarrollar interfaces dinámicas e interactivas.
+### React
+React fue elegido para la construcción de la interfaz de usuario por su enfoque basado en componentes:
+- Permite desarrollar interfaces dinámicas e interactivas.  
+- Favorece la reutilización de componentes, reduciendo la duplicidad de código.  
+- Optimiza la experiencia del usuario al actualizar la interfaz sin recargar la página.  
+- Cuenta con una comunidad activa y abundante documentación, lo que facilita la resolución de problemas.  
 
-Facilita la reutilización de componentes, haciendo el código más limpio y mantenible.
+### Vite
+Vite se seleccionó como herramienta de desarrollo por su rapidez y simplicidad:
+- Arranque del servidor de desarrollo casi instantáneo.  
+- Recarga en caliente para visualizar cambios en tiempo real.  
+- Configuración moderna y ligera, con excelente integración con React.  
 
-Mejora la experiencia del usuario al actualizar la interfaz sin recargar la página.
+### React Icons
+Se incorporó React Icons para mejorar la experiencia visual:
+- Integración sencilla de iconos sin necesidad de imágenes externas.  
+- Interfaz más clara e intuitiva para el usuario.  
+- Importación selectiva de iconos, optimizando el rendimiento del frontend.  
 
-Cuenta con una gran comunidad y abundante documentación.
+---
 
-Vite
+## Backend
 
-Vite fue elegido como herramienta de desarrollo por su rapidez y simplicidad.
+### Node.js y Express
+El backend se construyó con Node.js y Express para ofrecer una API REST robusta:
+- Uso de JavaScript tanto en frontend como en backend, unificando el stack tecnológico.  
+- Express es ligero, flexible y fácil de configurar.  
+- Manejo eficiente de múltiples solicitudes concurrentes.  
+- Amplio ecosistema de librerías y middleware que agilizan el desarrollo.  
 
-Arranque del servidor de desarrollo muy rápido.
+---
 
-Recarga instantánea de cambios durante el desarrollo.
+## Base de Datos Híbrida
 
-Configuración sencilla y moderna.
+### MongoDB
+MongoDB se eligió como base documental por su flexibilidad:
+- Base de datos NoSQL orientada a documentos.  
+- Uso de formato JSON, ideal para integrarse con Node.js.  
+- Escalabilidad y facilidad para modificar la estructura de datos.  
+- Adecuada para manejar usuarios, registros y datos dinámicos.  
 
-Excelente integración con React.
+### PostgreSQL
+PostgreSQL complementa la arquitectura como base relacional:
+- Garantiza integridad y consistencia en datos estructurados.  
+- Soporta transacciones complejas y relaciones entre tablas.  
+- Se configuró con **backups automatizados** mediante tareas programadas (Cron).  
+- Integración con PM2 para mantener procesos de respaldo activos en segundo plano.  
 
-React Icons
+---
 
-Se utilizó React Icons para mejorar la experiencia visual de la aplicación.
+## Autenticación
 
-Permite integrar iconos fácilmente sin usar imágenes externas.
+### JWT (JSON Web Tokens)
+La autenticación se implementó con JWT para asegurar el acceso:
+- Sistema seguro y ligero sin necesidad de mantener sesiones en el servidor.  
+- Ideal para aplicaciones SPA (Single Page Application).  
+- Facilita la protección de rutas y el control de acceso.  
 
-Ayuda a crear una interfaz más intuitiva y clara.
+---
 
-Reduce la carga del proyecto al importar solo los iconos necesarios.
+## Estilos
 
-Node.js y Express (Backend)
+### CSS Personalizado
+Se optó por CSS personalizado para el diseño visual:
+- Mayor control sobre la apariencia de la aplicación.  
+- Evita la dependencia de frameworks externos innecesarios.  
+- Permite adaptar el diseño a la identidad del proyecto.  
 
-Para el backend se empleó Node.js junto con Express para construir una API REST.
+---
 
-Permite usar JavaScript tanto en frontend como en backend.
+## Gestión de Procesos
 
-Express es ligero, flexible y fácil de configurar.
+### PM2
+PM2 se utiliza para la gestión de procesos y automatización:
+- Mantiene el backend y los servicios de backup activos en segundo plano.  
+- Facilita la supervisión de logs y reinicio automático en caso de fallos.  
+- Asegura la continuidad del sistema en producción.  
 
-Maneja múltiples solicitudes de forma eficiente.
+---
 
-Amplio ecosistema de librerías y middleware.
+## Control de Versiones
 
-MongoDB (Base de datos)
+### Git y GitHub
+Se emplearon Git y GitHub para la gestión del proyecto:
+- Historial de cambios claro y organizado.  
+- Trabajo colaborativo simplificado.  
+- Facilidad para compartir y mantener el código en el repositorio.  
 
-Se eligió MongoDB como sistema de base de datos por su flexibilidad y compatibilidad con JavaScript.
+---
 
-Base de datos NoSQL orientada a documentos.
+## Conclusión
 
-Uso de formato JSON, ideal para integrarse con Node.js.
-
-Facilita la escalabilidad y los cambios en la estructura de los datos.
-
-Adecuada para manejar usuarios, registros y datos dinámicos.
-
-Autenticación con JWT
-
-Para la autenticación se implementó JSON Web Tokens (JWT).
-
-Proporciona un sistema de autenticación seguro.
-
-No requiere mantener sesiones en el servidor.
-
-Ideal para aplicaciones tipo Single Page Application (SPA).
-
-Facilita la protección de rutas y el control de acceso.
-
-CSS Personalizado
-
-Se utilizó CSS personalizado para el diseño visual de la aplicación.
-
-Permite un mayor control sobre la apariencia.
-
-Evita depender de frameworks innecesarios.
-
-Facilita la adaptación del diseño a la identidad del proyecto.
-
-Git y GitHub
-
-Se emplearon Git y GitHub para el control de versiones y la gestión del proyecto.
-
-Permiten llevar un historial de cambios claro.
-
-Facilitan el trabajo colaborativo.
-
-Hacen más sencillo compartir y mantener el proyecto.
-
-Conclusión
-
-El uso de este conjunto de tecnologías permitió desarrollar una aplicación web moderna, rápida y segura. Estas herramientas se adaptan correctamente a los objetivos de Eco-Move, ofreciendo una base sólida para fomentar la movilidad sostenible mediante una plataforma digital eficiente.
+La combinación de estas tecnologías permitió construir una aplicación web moderna, rápida y segura. La arquitectura híbrida de bases de datos garantiza flexibilidad y confiabilidad, mientras que las herramientas de desarrollo y gestión aseguran un flujo de trabajo eficiente. Eco-Move como una plataforma sólida para promover la movilidad sostenible mediante soluciones digitales escalables y bien estructuradas.
